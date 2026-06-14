@@ -2114,30 +2114,51 @@
         // 新版方程式答案检查
         function checkEquationAnswerNew() {
             var allCorrect = true;
-            var results = { reactants: [], products: [], condition: null, coefficients: [] };
 
-            // 检查反应物系数
-            var rCount = currentEquations[currentEquationIndex].reactants.length;
-            var pCount = currentEquations[currentEquationIndex].products.length;
-            
-            for (var i = 0; i < rCount; i++) {
-                var coeffInput = document.getElementById('eqCR' + i);
-                var rInput = document.getElementById('eqR' + i);
-                
-                // 检查化学式
-                var userAns = rInput.value.trim();
-                var correctAns = rInput.getAttribute('data-answer');
-                var isCorrect = userAns.toLowerCase() === correctAns.toLowerCase();
-                
-                if (isCorrect) {
-                    rInput.style.borderColor = '#22c55e';
-                } else {
-                    rInput.style.borderColor = '#ff6b6b';
-                    rInput.value = correctAns;
-                    allCorrect = false;
+            // 获取当前方程式数据
+            var eq = currentEquations[currentEquationIndex];
+            var rCount = eq.reactants.length;
+            var pCount = eq.products.length;
+
+            // 辅助函数：标准化化学式（将下标转为普通数字，统一比较）
+            function normalizeFormula(formula) {
+                var subscriptMap = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};
+                var normalized = formula.toLowerCase();
+                for (var key in subscriptMap) {
+                    normalized = normalized.split(key).join(subscriptMap[key]);
                 }
-                results.reactants.push({ user: userAns, correct: correctAns, isCorrect: isCorrect });
+                return normalized;
             }
+
+            // 收集用户输入的反应物
+            var userReactants = [];
+            var reactantInputs = [];
+            for (var i = 0; i < rCount; i++) {
+                var rInput = document.getElementById('eqR' + i);
+                var userAns = rInput.value.trim();
+                userReactants.push(normalizeFormula(userAns));
+                reactantInputs.push(rInput);
+            }
+
+            // 收集正确答案的反应物（标准化）
+            var correctReactants = eq.reactants.map(function(r) { return normalizeFormula(r); });
+
+            // 比较反应物（不考虑顺序）
+            var sortedUserR = userReactants.slice().sort();
+            var sortedCorrectR = correctReactants.slice().sort();
+            var reactantsCorrect = JSON.stringify(sortedUserR) === JSON.stringify(sortedCorrectR);
+
+            // 标记反应物输入框
+            reactantInputs.forEach(function(input, idx) {
+                if (reactantsCorrect) {
+                    input.style.borderColor = '#22c55e';
+                } else {
+                    input.style.borderColor = '#ff6b6b';
+                    input.value = eq.reactants[idx];
+                }
+            });
+
+            if (!reactantsCorrect) allCorrect = false;
 
             // 检查条件
             var condInput = document.getElementById('eqCond');
@@ -2152,25 +2173,37 @@
                     condInput.value = correctCond;
                     allCorrect = false;
                 }
-                results.condition = { user: userCond, correct: correctCond, isCorrect: condCorrect };
             }
 
-            // 检查生成物化学式
+            // 收集用户输入的生成物
+            var userProducts = [];
+            var productInputs = [];
             for (var j = 0; j < pCount; j++) {
                 var pInput = document.getElementById('eqP' + j);
                 var userAns = pInput.value.trim();
-                var correctAns = pInput.getAttribute('data-answer');
-                var isCorrect = userAns.toLowerCase() === correctAns.toLowerCase();
-                
-                if (isCorrect) {
-                    pInput.style.borderColor = '#22c55e';
-                } else {
-                    pInput.style.borderColor = '#ff6b6b';
-                    pInput.value = correctAns;
-                    allCorrect = false;
-                }
-                results.products.push({ user: userAns, correct: correctAns, isCorrect: isCorrect });
+                userProducts.push(normalizeFormula(userAns));
+                productInputs.push(pInput);
             }
+
+            // 收集正确答案的生成物（标准化）
+            var correctProducts = eq.products.map(function(p) { return normalizeFormula(p); });
+
+            // 比较生成物（不考虑顺序）
+            var sortedUserP = userProducts.slice().sort();
+            var sortedCorrectP = correctProducts.slice().sort();
+            var productsCorrect = JSON.stringify(sortedUserP) === JSON.stringify(sortedCorrectP);
+
+            // 标记生成物输入框
+            productInputs.forEach(function(input, idx) {
+                if (productsCorrect) {
+                    input.style.borderColor = '#22c55e';
+                } else {
+                    input.style.borderColor = '#ff6b6b';
+                    input.value = eq.products[idx];
+                }
+            });
+
+            if (!productsCorrect) allCorrect = false;
 
             // 显示反馈
             var modal = document.getElementById('feedbackModal');
@@ -2179,22 +2212,22 @@
             var message = document.getElementById('feedbackMessage');
 
             if (allCorrect) {
-                icon.textContent = '✅'; 
+                icon.textContent = '✅';
                 title.textContent = '回答正确！';
-                message.textContent = '太棒了！完全正确！\n\n完整方程式：\n' + currentEquations[currentEquationIndex].equation;
+                message.textContent = '太棒了！完全正确！\n\n完整方程式：\n' + eq.equation;
                 updateProgress(currentElement, true);
             } else {
-                icon.textContent = '❌'; 
+                icon.textContent = '❌';
                 title.textContent = '回答错误';
-                message.textContent = '正确答案已显示在输入框中。\n\n完整方程式：\n' + currentEquations[currentEquationIndex].equation;
+                message.textContent = '正确答案已显示在输入框中。\n\n完整方程式：\n' + eq.equation;
                 updateProgress(currentElement, false);
-                addWrongQuestion({ 
-                    type: 'equation', 
-                    question: currentEquations[currentEquationIndex].description || currentEquations[currentEquationIndex].equation,
-                    answer: currentEquations[currentEquationIndex].equation, 
+                addWrongQuestion({
+                    type: 'equation',
+                    question: eq.description || eq.equation,
+                    answer: eq.equation,
                     userAnswer: '',
-                    difficulty: currentEquations[currentEquationIndex].difficulty, 
-                    element: currentElement 
+                    difficulty: eq.difficulty,
+                    element: currentElement
                 });
             }
 
