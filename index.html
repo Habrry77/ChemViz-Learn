@@ -1350,25 +1350,38 @@
                     { id: 'fe-fecl3', formula: 'FeCl₃', name: '氯化铁', category: 'salt', valence: 3,
                       properties: { appearance: '棕黄色晶体', solubility: '易溶于水', hydrolysis: '易水解' },
                       reactions: ['Fe₂O₃ + 6HCl → 2FeCl₃ + 3H₂O', 'Fe + 2FeCl₃ → 3FeCl₂'] },
+                    { id: 'fe-feso4', formula: 'FeSO₄', name: '硫酸亚铁', category: 'salt', valence: 2,
+                      properties: { appearance: '浅绿色晶体', solubility: '易溶于水', oxidation: '易被氧化' },
+                      reactions: ['Fe + H₂SO₄ → FeSO₄ + H₂↑', 'FeSO₄ + 2NaOH → Fe(OH)₂↓ + Na₂SO₄'] },
                     { id: 'fe-feoh2', formula: 'Fe(OH)₂', name: '氢氧化亚铁', category: 'base', valence: 2,
                       properties: { appearance: '白色沉淀', oxidation: '易被氧化', colorChange: '白→灰绿→红褐' },
                       reactions: ['FeCl₂ + 2NaOH → Fe(OH)₂↓ + 2NaCl', '4Fe(OH)₂ + O₂ + 2H₂O → 4Fe(OH)₃'] },
                     { id: 'fe-feoh3', formula: 'Fe(OH)₃', name: '氢氧化铁', category: 'base', valence: 3,
                       properties: { appearance: '红褐色沉淀', thermalDecomposition: '受热分解' },
-                      reactions: ['FeCl₃ + 3NaOH → Fe(OH)₃↓ + 3NaCl', '2Fe(OH)₃ → Fe₂O₃ + 3H₂O'] }
+                      reactions: ['FeCl₃ + 3NaOH → Fe(OH)₃↓ + 3NaCl', '2Fe(OH)₃ → Fe₂O₃ + 3H₂O'] },
+                    { id: 'fe-cu', formula: 'Cu', name: '铜', category: 'element', valence: 0,
+                      properties: { appearance: '紫红色金属', conductivity: '良好导电性' },
+                      reactions: ['Fe + CuSO₄ → FeSO₄ + Cu'] }
                 ],
                 conversions: [
                     { from: 'fe-fe', to: 'fe-feo', condition: 'O₂/不足' },
                     { from: 'fe-fe', to: 'fe-fe3o4', condition: 'O₂/点燃' },
                     { from: 'fe-fe', to: 'fe-fecl2', condition: 'HCl' },
-                    { from: 'fe-feo', to: 'fe-fe2o3', condition: 'O₂' },
+                    { from: 'fe-fe', to: 'fe-feso4', condition: 'H₂SO₄' },
+                    { from: 'fe-fe', to: 'fe-fecl3', condition: 'Cl₂/点燃' },
+                    { from: 'fe-fe', to: 'fe-fe3o4', condition: 'H₂O/高温' },
+                    { from: 'fe-feo', to: 'fe-fe3o4', condition: 'O₂/△' },
                     { from: 'fe-fe2o3', to: 'fe-fe', condition: 'CO/高温' },
-                    { from: 'fe-fe2o3', to: 'fe-fecl3', condition: 'HCl' },
+                    { from: 'fe-fe3o4', to: 'fe-fe', condition: 'CO/高温' },
+                    { from: 'fe-feo', to: 'fe-fe', condition: 'CO/高温' },
                     { from: 'fe-fecl2', to: 'fe-feoh2', condition: 'NaOH' },
                     { from: 'fe-fecl3', to: 'fe-feoh3', condition: 'NaOH' },
+                    { from: 'fe-feso4', to: 'fe-feoh2', condition: 'NaOH' },
                     { from: 'fe-feoh2', to: 'fe-feoh3', condition: 'O₂+H₂O' },
+                    { from: 'fe-feoh3', to: 'fe-fe2o3', condition: '△' },
                     { from: 'fe-fecl2', to: 'fe-fecl3', condition: 'Cl₂' },
-                    { from: 'fe-fe', to: 'fe-fecl3', condition: 'Cl₂' }
+                    { from: 'fe-fecl3', to: 'fe-fecl2', condition: 'Fe' },
+                    { from: 'fe-fe', to: 'fe-cu', condition: 'CuSO₄' }
                 ]
             },
             chlorine: {
@@ -1451,20 +1464,28 @@
             sulfur: [
                 { id: 's1', description: '硫单质与氧气点燃反应', equation: 'S + O₂ → SO₂', conditions: ['点燃'], type: '化合反应', difficulty: 'easy',
                   reactants: ['S', 'O₂'], products: ['SO₂'] },
-                { id: 's2', description: '二氧化硫与氧气催化反应', equation: '2SO₂ + O₂ ⇌ 2SO₃', conditions: ['催化剂'], type: '化合反应', difficulty: 'medium',
-                  reactants: ['SO₂', 'O₂'], products: ['SO₃'] },
-                { id: 's3', description: '二氧化硫与水反应', equation: 'SO₂ + H₂O → H₂SO₃', conditions: [], type: '化合反应', difficulty: 'easy',
-                  reactants: ['SO₂', 'H₂O'], products: ['H₂SO₃'] },
-                { id: 's4', description: '三氧化硫与水反应', equation: 'SO₃ + H₂O → H₂SO₄', conditions: [], type: '化合反应', difficulty: 'easy',
-                  reactants: ['SO₃', 'H₂O'], products: ['H₂SO₄'] },
-                { id: 's5', description: '铜与浓硫酸加热反应', equation: 'Cu + 2H₂SO₄(浓) → CuSO₄ + SO₂↑ + 2H₂O', conditions: ['△'], type: '氧化还原反应', difficulty: 'hard',
-                  reactants: ['Cu', 'H₂SO₄'], products: ['CuSO₄', 'SO₂', 'H₂O'] },
-                { id: 's6', description: '亚硫酸钠与硫酸反应', equation: 'Na₂SO₃ + H₂SO₄ → Na₂SO₄ + SO₂↑ + H₂O', conditions: [], type: '复分解反应', difficulty: 'medium',
+                { id: 's2', description: '实验室制二氧化硫（亚硫酸钠法）', equation: 'Na₂SO₃ + H₂SO₄ → Na₂SO₄ + SO₂↑ + H₂O', conditions: [], type: '复分解反应', difficulty: 'medium',
                   reactants: ['Na₂SO₃', 'H₂SO₄'], products: ['Na₂SO₄', 'SO₂', 'H₂O'] },
+                { id: 's3', description: '实验室制二氧化硫（铜与浓硫酸法）', equation: 'Cu + 2H₂SO₄(浓) → CuSO₄ + SO₂↑ + 2H₂O', conditions: ['△'], type: '氧化还原反应', difficulty: 'hard',
+                  reactants: ['Cu', 'H₂SO₄'], products: ['CuSO₄', 'SO₂', 'H₂O'] },
+                { id: 's4', description: '二氧化硫与氧气催化反应', equation: '2SO₂ + O₂ ⇌ 2SO₃', conditions: ['催化剂'], type: '化合反应', difficulty: 'medium',
+                  reactants: ['SO₂', 'O₂'], products: ['SO₃'] },
+                { id: 's5', description: '二氧化硫与水反应', equation: 'SO₂ + H₂O → H₂SO₃', conditions: [], type: '化合反应', difficulty: 'easy',
+                  reactants: ['SO₂', 'H₂O'], products: ['H₂SO₃'] },
+                { id: 's6', description: '三氧化硫与水反应', equation: 'SO₃ + H₂O → H₂SO₄', conditions: [], type: '化合反应', difficulty: 'easy',
+                  reactants: ['SO₃', 'H₂O'], products: ['H₂SO₄'] },
                 { id: 's7', description: '硫化氢在氧气中完全燃烧', equation: '2H₂S + 3O₂ → 2SO₂ + 2H₂O', conditions: ['点燃'], type: '氧化反应', difficulty: 'medium',
                   reactants: ['H₂S', 'O₂'], products: ['SO₂', 'H₂O'] },
-                { id: 's8', description: '硫化氢与二氧化硫反应', equation: 'H₂S + SO₂ → 3S + 2H₂O', conditions: [], type: '归中反应', difficulty: 'hard',
-                  reactants: ['H₂S', 'SO₂'], products: ['S', 'H₂O'] }
+                { id: 's8', description: '硫化氢与二氧化硫反应', equation: '2H₂S + SO₂ → 3S + 2H₂O', conditions: [], type: '归中反应', difficulty: 'hard',
+                  reactants: ['H₂S', 'SO₂'], products: ['S', 'H₂O'] },
+                { id: 's9', description: '二氧化硫与氢氧化钠反应', equation: 'SO₂ + 2NaOH → Na₂SO₃ + H₂O', conditions: [], type: '化合反应', difficulty: 'easy',
+                  reactants: ['SO₂', 'NaOH'], products: ['Na₂SO₃', 'H₂O'] },
+                { id: 's10', description: '二氧化硫与过量氢氧化钠反应', equation: 'SO₂ + NaOH → NaHSO₃', conditions: [], type: '化合反应', difficulty: 'medium',
+                  reactants: ['SO₂', 'NaOH'], products: ['NaHSO₃'] },
+                { id: 's11', description: '二氧化硫漂白性（与品红反应）', equation: 'SO₂ + 品红溶液 → 无色化合物', conditions: [], type: '漂白反应', difficulty: 'medium',
+                  reactants: ['SO₂'], products: [] },
+                { id: 's12', description: '亚硫酸钠与氧气反应', equation: '2Na₂SO₃ + O₂ → 2Na₂SO₄', conditions: [], type: '氧化反应', difficulty: 'medium',
+                  reactants: ['Na₂SO₃', 'O₂'], products: ['Na₂SO₄'] }
             ],
             sodium: [
                 { id: 'na1', description: '钠在氧气中燃烧', equation: '2Na + O₂ → Na₂O₂', conditions: ['点燃'], type: '化合反应', difficulty: 'easy',
@@ -1489,54 +1510,92 @@
                   reactants: ['Fe', 'O₂'], products: ['Fe₃O₄'] },
                 { id: 'fe2', description: '铁与盐酸反应', equation: 'Fe + 2HCl → FeCl₂ + H₂↑', conditions: [], type: '置换反应', difficulty: 'easy',
                   reactants: ['Fe', 'HCl'], products: ['FeCl₂', 'H₂'] },
-                { id: 'fe3', description: '氧化铁与一氧化碳高温反应', equation: 'Fe₂O₃ + 3CO → 2Fe + 3CO₂', conditions: ['高温'], type: '还原反应', difficulty: 'medium',
+                { id: 'fe3', description: '铁与稀硫酸反应', equation: 'Fe + H₂SO₄ → FeSO₄ + H₂↑', conditions: [], type: '置换反应', difficulty: 'easy',
+                  reactants: ['Fe', 'H₂SO₄'], products: ['FeSO₄', 'H₂'] },
+                { id: 'fe4', description: '铁与硫酸铜溶液反应', equation: 'Fe + CuSO₄ → FeSO₄ + Cu', conditions: [], type: '置换反应', difficulty: 'easy',
+                  reactants: ['Fe', 'CuSO₄'], products: ['FeSO₄', 'Cu'] },
+                { id: 'fe5', description: '铁与氯气反应', equation: '2Fe + 3Cl₂ → 2FeCl₃', conditions: ['点燃'], type: '化合反应', difficulty: 'medium',
+                  reactants: ['Fe', 'Cl₂'], products: ['FeCl₃'] },
+                { id: 'fe6', description: '氧化铁与一氧化碳高温反应', equation: 'Fe₂O₃ + 3CO → 2Fe + 3CO₂', conditions: ['高温'], type: '还原反应', difficulty: 'medium',
                   reactants: ['Fe₂O₃', 'CO'], products: ['Fe', 'CO₂'] },
-                { id: 'fe4', description: '氯化亚铁与氯气反应', equation: '2FeCl₂ + Cl₂ → 2FeCl₃', conditions: [], type: '氧化反应', difficulty: 'medium',
+                { id: 'fe7', description: '四氧化三铁与一氧化碳反应', equation: 'Fe₃O₄ + 4CO → 3Fe + 4CO₂', conditions: ['高温'], type: '还原反应', difficulty: 'medium',
+                  reactants: ['Fe₃O₄', 'CO'], products: ['Fe', 'CO₂'] },
+                { id: 'fe8', description: '氧化亚铁与一氧化碳反应', equation: 'FeO + CO → Fe + CO₂', conditions: ['高温'], type: '还原反应', difficulty: 'medium',
+                  reactants: ['FeO', 'CO'], products: ['Fe', 'CO₂'] },
+                { id: 'fe9', description: '氯化亚铁与氯气反应', equation: '2FeCl₂ + Cl₂ → 2FeCl₃', conditions: [], type: '氧化反应', difficulty: 'medium',
                   reactants: ['FeCl₂', 'Cl₂'], products: ['FeCl₃'] },
-                { id: 'fe5', description: '铁与氯化铁反应', equation: 'Fe + 2FeCl₃ → 3FeCl₂', conditions: [], type: '归中反应', difficulty: 'medium',
+                { id: 'fe10', description: '铁与氯化铁反应', equation: 'Fe + 2FeCl₃ → 3FeCl₂', conditions: [], type: '归中反应', difficulty: 'medium',
                   reactants: ['Fe', 'FeCl₃'], products: ['FeCl₂'] },
-                { id: 'fe6', description: '氯化亚铁与氢氧化钠反应', equation: 'FeCl₂ + 2NaOH → Fe(OH)₂↓ + 2NaCl', conditions: [], type: '复分解反应', difficulty: 'easy',
+                { id: 'fe11', description: '氯化亚铁与氢氧化钠反应', equation: 'FeCl₂ + 2NaOH → Fe(OH)₂↓ + 2NaCl', conditions: [], type: '复分解反应', difficulty: 'easy',
                   reactants: ['FeCl₂', 'NaOH'], products: ['Fe(OH)₂', 'NaCl'] },
-                { id: 'fe7', description: '氢氧化亚铁在空气中被氧化', equation: '4Fe(OH)₂ + O₂ + 2H₂O → 4Fe(OH)₃', conditions: [], type: '氧化还原反应', difficulty: 'medium',
+                { id: 'fe12', description: '氯化铁与氢氧化钠反应', equation: 'FeCl₃ + 3NaOH → Fe(OH)₃↓ + 3NaCl', conditions: [], type: '复分解反应', difficulty: 'easy',
+                  reactants: ['FeCl₃', 'NaOH'], products: ['Fe(OH)₃', 'NaCl'] },
+                { id: 'fe13', description: '氢氧化亚铁在空气中被氧化', equation: '4Fe(OH)₂ + O₂ + 2H₂O → 4Fe(OH)₃', conditions: [], type: '氧化还原反应', difficulty: 'medium',
                   reactants: ['Fe(OH)₂', 'O₂', 'H₂O'], products: ['Fe(OH)₃'] },
-                { id: 'fe8', description: '氢氧化铁受热分解', equation: '2Fe(OH)₃ → Fe₂O₃ + 3H₂O', conditions: ['△'], type: '分解反应', difficulty: 'easy',
-                  reactants: ['Fe(OH)₃'], products: ['Fe₂O₃', 'H₂O'] }
+                { id: 'fe14', description: '氢氧化铁受热分解', equation: '2Fe(OH)₃ → Fe₂O₃ + 3H₂O', conditions: ['△'], type: '分解反应', difficulty: 'easy',
+                  reactants: ['Fe(OH)₃'], products: ['Fe₂O₃', 'H₂O'] },
+                { id: 'fe15', description: '铁与水蒸气高温反应', equation: '3Fe + 4H₂O → Fe₃O₄ + 4H₂', conditions: ['高温'], type: '置换反应', difficulty: 'hard',
+                  reactants: ['Fe', 'H₂O'], products: ['Fe₃O₄', 'H₂'] },
+                { id: 'fe16', description: '氧化亚铁与氧气反应', equation: '6FeO + O₂ → 2Fe₃O₄', conditions: ['△'], type: '化合反应', difficulty: 'medium',
+                  reactants: ['FeO', 'O₂'], products: ['Fe₃O₄'] },
+                { id: 'fe17', description: '硫酸亚铁与氢氧化钠反应', equation: 'FeSO₄ + 2NaOH → Fe(OH)₂↓ + Na₂SO₄', conditions: [], type: '复分解反应', difficulty: 'easy',
+                  reactants: ['FeSO₄', 'NaOH'], products: ['Fe(OH)₂', 'Na₂SO₄'] },
+                { id: 'fe18', description: '铁与浓硫酸常温钝化', equation: 'Fe + 浓H₂SO₄ → 钝化', conditions: ['常温'], type: '钝化', difficulty: 'medium',
+                  reactants: ['Fe', 'H₂SO₄'], products: [] },
+                { id: 'fe19', description: '铁与浓硝酸常温钝化', equation: 'Fe + 浓HNO₃ → 钝化', conditions: ['常温'], type: '钝化', difficulty: 'medium',
+                  reactants: ['Fe', 'HNO₃'], products: [] },
+                { id: 'fe20', description: '铁与稀硝酸反应', equation: 'Fe + 4HNO₃(稀) → Fe(NO₃)₃ + NO↑ + 2H₂O', conditions: [], type: '氧化还原反应', difficulty: 'hard',
+                  reactants: ['Fe', 'HNO₃'], products: ['Fe(NO₃)₃', 'NO', 'H₂O'] }
             ],
             chlorine: [
                 { id: 'cl1', description: '氢气在氯气中燃烧', equation: 'H₂ + Cl₂ → 2HCl', conditions: ['点燃或光照'], type: '化合反应', difficulty: 'easy',
                   reactants: ['H₂', 'Cl₂'], products: ['HCl'] },
-                { id: 'cl2', description: '二氧化锰与浓盐酸加热制氯气', equation: 'MnO₂ + 4HCl(浓) → Cl₂↑ + MnCl₂ + 2H₂O', conditions: ['△'], type: '氧化还原反应', difficulty: 'hard',
+                { id: 'cl2', description: '实验室制氯气（二氧化锰法）', equation: 'MnO₂ + 4HCl(浓) → Cl₂↑ + MnCl₂ + 2H₂O', conditions: ['△'], type: '氧化还原反应', difficulty: 'hard',
                   reactants: ['MnO₂', 'HCl'], products: ['Cl₂', 'MnCl₂', 'H₂O'] },
-                { id: 'cl3', description: '氯气与水反应', equation: 'Cl₂ + H₂O ⇌ HCl + HClO', conditions: [], type: '歧化反应', difficulty: 'medium',
+                { id: 'cl3', description: '实验室制氯气（高锰酸钾法）', equation: '2KMnO₄ + 16HCl(浓) → 2KCl + 2MnCl₂ + 5Cl₂↑ + 8H₂O', conditions: [], type: '氧化还原反应', difficulty: 'hard',
+                  reactants: ['KMnO₄', 'HCl'], products: ['KCl', 'MnCl₂', 'Cl₂', 'H₂O'] },
+                { id: 'cl4', description: '氯气与水反应', equation: 'Cl₂ + H₂O ⇌ HCl + HClO', conditions: [], type: '歧化反应', difficulty: 'medium',
                   reactants: ['Cl₂', 'H₂O'], products: ['HCl', 'HClO'] },
-                { id: 'cl4', description: '氯气与冷氢氧化钠溶液反应', equation: 'Cl₂ + 2NaOH → NaCl + NaClO + H₂O', conditions: ['冷'], type: '歧化反应', difficulty: 'medium',
+                { id: 'cl5', description: '氯气与冷氢氧化钠溶液反应', equation: 'Cl₂ + 2NaOH → NaCl + NaClO + H₂O', conditions: ['冷'], type: '歧化反应', difficulty: 'medium',
                   reactants: ['Cl₂', 'NaOH'], products: ['NaCl', 'NaClO', 'H₂O'] },
-                { id: 'cl5', description: '氯气与热氢氧化钠溶液反应', equation: '3Cl₂ + 6NaOH → 5NaCl + NaClO₃ + 3H₂O', conditions: ['热'], type: '歧化反应', difficulty: 'hard',
+                { id: 'cl6', description: '氯气与热氢氧化钠溶液反应', equation: '3Cl₂ + 6NaOH → 5NaCl + NaClO₃ + 3H₂O', conditions: ['热'], type: '歧化反应', difficulty: 'hard',
                   reactants: ['Cl₂', 'NaOH'], products: ['NaCl', 'NaClO₃', 'H₂O'] },
-                { id: 'cl6', description: '氯气与氢氧化钙反应制漂白粉', equation: '2Cl₂ + 2Ca(OH)₂ → CaCl₂ + Ca(ClO)₂ + 2H₂O', conditions: [], type: '歧化反应', difficulty: 'medium',
+                { id: 'cl7', description: '氯气与氢氧化钙反应制漂白粉', equation: '2Cl₂ + 2Ca(OH)₂ → CaCl₂ + Ca(ClO)₂ + 2H₂O', conditions: [], type: '歧化反应', difficulty: 'medium',
                   reactants: ['Cl₂', 'Ca(OH)₂'], products: ['CaCl₂', 'Ca(ClO)₂', 'H₂O'] },
-                { id: 'cl7', description: '次氯酸光照分解', equation: '2HClO → 2HCl + O₂↑', conditions: ['光照'], type: '分解反应', difficulty: 'medium',
+                { id: 'cl8', description: '次氯酸光照分解', equation: '2HClO → 2HCl + O₂↑', conditions: ['光照'], type: '分解反应', difficulty: 'medium',
                   reactants: ['HClO'], products: ['HCl', 'O₂'] },
-                { id: 'cl8', description: '铁在氯气中燃烧', equation: '2Fe + 3Cl₂ → 2FeCl₃', conditions: ['△'], type: '化合反应', difficulty: 'medium',
-                  reactants: ['Fe', 'Cl₂'], products: ['FeCl₃'] }
+                { id: 'cl9', description: '铁在氯气中燃烧', equation: '2Fe + 3Cl₂ → 2FeCl₃', conditions: ['点燃'], type: '化合反应', difficulty: 'medium',
+                  reactants: ['Fe', 'Cl₂'], products: ['FeCl₃'] },
+                { id: 'cl10', description: '铜在氯气中燃烧', equation: 'Cu + Cl₂ → CuCl₂', conditions: ['点燃'], type: '化合反应', difficulty: 'medium',
+                  reactants: ['Cu', 'Cl₂'], products: ['CuCl₂'] },
+                { id: 'cl11', description: '漂白粉与稀盐酸反应', equation: 'Ca(ClO)₂ + 2HCl → CaCl₂ + 2HClO', conditions: [], type: '复分解反应', difficulty: 'medium',
+                  reactants: ['Ca(ClO)₂', 'HCl'], products: ['CaCl₂', 'HClO'] }
             ],
             nitrogen: [
                 { id: 'n1', description: '工业合成氨', equation: 'N₂ + 3H₂ ⇌ 2NH₃', conditions: ['高温高压催化剂'], type: '合成氨', difficulty: 'hard',
                   reactants: ['N₂', 'H₂'], products: ['NH₃'] },
-                { id: 'n2', description: '氮气与氧气放电反应', equation: 'N₂ + O₂ → 2NO', conditions: ['放电'], type: '化合反应', difficulty: 'medium',
+                { id: 'n2', description: '实验室制氨气', equation: '2NH₄Cl + Ca(OH)₂ → 2NH₃↑ + CaCl₂ + 2H₂O', conditions: ['△'], type: '复分解反应', difficulty: 'medium',
+                  reactants: ['NH₄Cl', 'Ca(OH)₂'], products: ['NH₃', 'CaCl₂', 'H₂O'] },
+                { id: 'n3', description: '氮气与氧气放电反应', equation: 'N₂ + O₂ → 2NO', conditions: ['放电'], type: '化合反应', difficulty: 'medium',
                   reactants: ['N₂', 'O₂'], products: ['NO'] },
-                { id: 'n3', description: '一氧化氮与氧气反应', equation: '2NO + O₂ → 2NO₂', conditions: [], type: '化合反应', difficulty: 'easy',
+                { id: 'n4', description: '一氧化氮与氧气反应', equation: '2NO + O₂ → 2NO₂', conditions: [], type: '化合反应', difficulty: 'easy',
                   reactants: ['NO', 'O₂'], products: ['NO₂'] },
-                { id: 'n4', description: '二氧化氮与水反应', equation: '3NO₂ + H₂O → 2HNO₃ + NO', conditions: [], type: '歧化反应', difficulty: 'medium',
+                { id: 'n5', description: '二氧化氮与水反应', equation: '3NO₂ + H₂O → 2HNO₃ + NO', conditions: [], type: '歧化反应', difficulty: 'medium',
                   reactants: ['NO₂', 'H₂O'], products: ['HNO₃', 'NO'] },
-                { id: 'n5', description: '氨气与氯化氢反应', equation: 'NH₃ + HCl → NH₄Cl', conditions: [], type: '化合反应', difficulty: 'easy',
+                { id: 'n6', description: '氨气与氯化氢反应', equation: 'NH₃ + HCl → NH₄Cl', conditions: [], type: '化合反应', difficulty: 'easy',
                   reactants: ['NH₃', 'HCl'], products: ['NH₄Cl'] },
-                { id: 'n6', description: '氯化铵受热分解', equation: 'NH₄Cl → NH₃↑ + HCl↑', conditions: ['△'], type: '分解反应', difficulty: 'easy',
+                { id: 'n7', description: '氯化铵受热分解', equation: 'NH₄Cl → NH₃↑ + HCl↑', conditions: ['△'], type: '分解反应', difficulty: 'easy',
                   reactants: ['NH₄Cl'], products: ['NH₃', 'HCl'] },
-                { id: 'n7', description: '氨气催化氧化', equation: '4NH₃ + 5O₂ → 4NO + 6H₂O', conditions: ['△催化剂'], type: '氧化反应', difficulty: 'hard',
+                { id: 'n8', description: '氨气催化氧化', equation: '4NH₃ + 5O₂ → 4NO + 6H₂O', conditions: ['△催化剂'], type: '氧化反应', difficulty: 'hard',
                   reactants: ['NH₃', 'O₂'], products: ['NO', 'H₂O'] },
-                { id: 'n8', description: '实验室制取氨气', equation: 'NH₄Cl + Ca(OH)₂ → CaCl₂ + 2NH₃↑ + 2H₂O', conditions: ['△'], type: '复分解反应', difficulty: 'medium',
-                  reactants: ['NH₄Cl', 'Ca(OH)₂'], products: ['CaCl₂', 'NH₃', 'H₂O'] }
+                { id: 'n9', description: '氨气溶于水', equation: 'NH₃ + H₂O ⇌ NH₃·H₂O ⇌ NH₄⁺ + OH⁻', conditions: [], type: '化合反应', difficulty: 'medium',
+                  reactants: ['NH₃', 'H₂O'], products: ['NH₄⁺', 'OH⁻'] },
+                { id: 'n10', description: '铜与浓硝酸反应', equation: 'Cu + 4HNO₃(浓) → Cu(NO₃)₂ + 2NO₂↑ + 2H₂O', conditions: [], type: '氧化还原反应', difficulty: 'hard',
+                  reactants: ['Cu', 'HNO₃'], products: ['Cu(NO₃)₂', 'NO₂', 'H₂O'] },
+                { id: 'n11', description: '铜与稀硝酸反应', equation: '3Cu + 8HNO₃(稀) → 3Cu(NO₃)₂ + 2NO↑ + 4H₂O', conditions: [], type: '氧化还原反应', difficulty: 'hard',
+                  reactants: ['Cu', 'HNO₃'], products: ['Cu(NO₃)₂', 'NO', 'H₂O'] },
+                { id: 'n12', description: '碳酸氢铵受热分解', equation: 'NH₄HCO₃ → NH₃↑ + CO₂↑ + H₂O', conditions: ['△'], type: '分解反应', difficulty: 'easy',
+                  reactants: ['NH₄HCO₃'], products: ['NH₃', 'CO₂', 'H₂O'] }
             ]
         };
 
@@ -1780,7 +1839,7 @@
                 console.log('Graph canvas not found');
                 return;
             }
-            
+
             var width = canvas.clientWidth || 400;
             var height = canvas.clientHeight || 350;
 
@@ -1801,33 +1860,58 @@
             title.textContent = '🔄 主要转化关系';
             canvas.appendChild(title);
 
+            // 辅助函数：查找对应的方程式
+            function findEquation(fromFormula, toFormula) {
+                var eqs = equations[element] || [];
+                for (var i = 0; i < eqs.length; i++) {
+                    var eq = eqs[i];
+                    // 检查反应物和生成物是否匹配
+                    var hasFrom = eq.reactants.some(function(r) {
+                        return r.toLowerCase() === fromFormula.toLowerCase();
+                    });
+                    var hasTo = eq.products.some(function(p) {
+                        return p.toLowerCase() === toFormula.toLowerCase();
+                    });
+                    if (hasFrom && hasTo) {
+                        return eq.equation;
+                    }
+                }
+                return null;
+            }
+
             // 绘制简单的转化关系列表
             if (data.conversions && data.conversions.length > 0) {
                 // 只显示前6个最重要的转化关系
                 var maxConversions = Math.min(data.conversions.length, 6);
-                
+
                 for (var i = 0; i < maxConversions; i++) {
                     var conv = data.conversions[i];
-                    
+
                     // 找到反应物和生成物
                     var fromComp = null, toComp = null;
                     data.compounds.forEach(function(comp) {
                         if (comp.id === conv.from) fromComp = comp;
                         if (comp.id === conv.to) toComp = comp;
                     });
-                    
+
                     if (!fromComp || !toComp) continue;
-                    
+
+                    // 创建转化项容器
+                    var convContainer = document.createElement('div');
+                    convContainer.style.marginBottom = '12px';
+                    convContainer.style.padding = '10px';
+                    convContainer.style.background = 'rgba(255,255,255,0.05)';
+                    convContainer.style.borderRadius = '8px';
+                    convContainer.style.borderLeft = '3px solid #00d2ff';
+
+                    // 第一行：转化关系
                     var convItem = document.createElement('div');
                     convItem.style.display = 'flex';
                     convItem.style.alignItems = 'center';
                     convItem.style.justifyContent = 'center';
-                    convItem.style.marginBottom = '8px';
-                    convItem.style.padding = '8px';
-                    convItem.style.background = 'rgba(255,255,255,0.05)';
-                    convItem.style.borderRadius = '6px';
                     convItem.style.flexWrap = 'wrap';
                     convItem.style.gap = '5px';
+                    convItem.style.marginBottom = '6px';
 
                     // 反应物
                     var fromBox = document.createElement('span');
@@ -1868,10 +1952,28 @@
                     convItem.appendChild(arrow);
                     convItem.appendChild(cond);
                     convItem.appendChild(toBox);
-                    
-                    canvas.appendChild(convItem);
+
+                    // 第二行：方程式
+                    var equationLine = document.createElement('div');
+                    equationLine.style.textAlign = 'center';
+                    equationLine.style.color = '#aaa';
+                    equationLine.style.fontSize = '12px';
+                    equationLine.style.fontFamily = 'monospace';
+                    equationLine.style.marginTop = '4px';
+
+                    var equation = findEquation(fromComp.formula, toComp.formula);
+                    if (equation) {
+                        equationLine.textContent = equation;
+                    } else {
+                        // 如果找不到完整方程式，显示简单格式
+                        equationLine.textContent = fromComp.formula + ' → ' + toComp.formula;
+                    }
+
+                    convContainer.appendChild(convItem);
+                    convContainer.appendChild(equationLine);
+                    canvas.appendChild(convContainer);
                 }
-                
+
                 // 如果还有更多转化关系，显示提示
                 if (data.conversions.length > maxConversions) {
                     var more = document.createElement('div');
@@ -1883,7 +1985,7 @@
                     canvas.appendChild(more);
                 }
             }
-            
+
             // 添加化合物图例
             var legend = document.createElement('div');
             legend.style.marginTop = '15px';
