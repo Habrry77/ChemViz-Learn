@@ -1,0 +1,2551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>化学元素化合物转换学习工具</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* 顶部导航 */
+        .header {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #00d2ff;
+        }
+        .logo-icon { font-size: 1.8rem; }
+        .nav-menu { display: flex; gap: 0.5rem; }
+        .nav-link {
+            color: #e0e0e0;
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            color: #ffffff;
+        }
+        .user-stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            margin-top: 85px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .section-header h2 {
+            font-size: 2.2rem;
+            margin-bottom: 0.8rem;
+            background: linear-gradient(135deg, #00d2ff 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .section-header p {
+            color: #909090;
+            font-size: 1.1rem;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #00d2ff;
+        }
+
+        /* 元素选择器 */
+        .element-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .element-selector label { font-size: 1.1rem; font-weight: 500; }
+        .element-selector select {
+            padding: 0.6rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .element-selector select:hover { border-color: #00d2ff; }
+        .element-selector select option { background: #1a1a3e; color: #ffffff; }
+
+        /* 可视化模块 */
+        .visualization-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            min-height: 380px;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-header {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .valence-svg { 
+            width: 100%; 
+            height: 300px; 
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        #graphCanvas {
+            width: 100%;
+            height: 420px;
+            position: relative;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .compound-node {
+            position: absolute;
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+            z-index: 10;
+        }
+        .compound-node > div {
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        .compound-node:hover { transform: scale(1.1); box-shadow: 0 6px 25px rgba(0, 210, 255, 0.5); z-index: 20; }
+        .compound-node.hydride { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%); }
+        .compound-node.element { background: linear-gradient(135deg, #4ecdc4 0%, #3dbdb5 100%); }
+        .compound-node.oxide { background: linear-gradient(135deg, #ffe66d 0%, #ffd93d 100%); }
+        .compound-node.oxide > div { color: #1a1a3e; text-shadow: none; }
+        .compound-node.acid { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); }
+        .compound-node.salt { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+        .compound-node.base { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+
+        .conversion-line {
+            position: absolute;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(0, 210, 255, 0.8), rgba(0, 210, 255, 0.4));
+            top: 50%;
+            transform-origin: left center;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .conversion-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 10px solid #00d2ff;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            z-index: 6;
+        }
+        .conversion-condition {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #ffffff;
+            white-space: nowrap;
+            z-index: 15;
+            border: 1px solid rgba(255, 230, 109, 0.3);
+        }
+
+        /* 方程式练习 */
+        .equation-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .equation-display {
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            font-family: 'Noto Sans SC', monospace;
+        }
+        
+        /* 方程式问答样式 */
+        .equation-question {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        .question-label {
+            color: #00d2ff;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            font-size: 1.3rem;
+        }
+        .question-text {
+            color: #ffffff;
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+        .equation-template {
+            display: flex;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        .template-label {
+            color: #22c55e;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            font-size: 1.3rem;
+        }
+        .template-inputs {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+        .eq-input {
+            width: 100px;
+            padding: 0.6rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .eq-input:focus {
+            outline: none;
+            border-color: #00d2ff;
+        }
+        .eq-input::placeholder { color: #666; font-size: 0.85rem; }
+        .eq-coeff {
+            width: 50px !important;
+            background: rgba(255, 230, 109, 0.1) !important;
+            border-color: rgba(255, 230, 109, 0.3) !important;
+        }
+        .eq-coeff:focus {
+            border-color: #ffe66d !important;
+        }
+        .eq-plus {
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin: 0 0.2rem;
+        }
+        .eq-equals {
+            color: #ffe66d;
+            font-size: 1.5rem;
+            margin: 0 2rem;
+            font-weight: bold;
+        }
+        .eq-condition {
+            width: 80px;
+            border-color: rgba(255, 230, 109, 0.3);
+            background: rgba(255, 230, 109, 0.1);
+        }
+        .eq-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin: 0.5rem 0;
+        }
+        .eq-arrow-row {
+            position: relative;
+            padding: 0.3rem 0;
+        }
+        .eq-arrow-row .eq-condition {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .answer-format {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .answer-input input {
+            width: 150px;
+            padding: 0.7rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .answer-input input:focus {
+            outline: none;
+            border-color: #00d2ff;
+        }
+        .answer-input input::placeholder { color: #888; }
+
+        /* 化学下标键盘 */
+        .chem-keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            justify-content: center;
+        }
+        .chem-keyboard button {
+            padding: 0.6rem 1rem;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            background: rgba(0, 210, 255, 0.15);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 45px;
+        }
+        .chem-keyboard button:hover {
+            background: rgba(0, 210, 255, 0.3);
+            border-color: #00d2ff;
+            transform: translateY(-2px);
+        }
+        .chem-keyboard button.subscript-btn {
+            background: rgba(255, 230, 109, 0.2);
+            border-color: rgba(255, 230, 109, 0.4);
+            color: #ffe66d;
+            font-size: 0.85rem;
+        }
+        .chem-keyboard button.subscript-btn:hover {
+            background: rgba(255, 230, 109, 0.35);
+        }
+        .chem-keyboard-label {
+            width: 100%;
+            text-align: center;
+            color: #909090;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 化合物性质 */
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .search-bar input, .search-bar select {
+            padding: 0.6rem 1rem;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+        .search-bar input { flex: 1; min-width: 200px; }
+        .search-bar input::placeholder { color: #666; }
+        .compound-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .compound-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .compound-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            border-color: #00d2ff;
+        }
+        .compound-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #00d2ff;
+            text-shadow: 0 1px 3px rgba(0, 210, 255, 0.3);
+        }
+        .compound-card .formula { 
+            font-size: 0.9rem; 
+            color: #d0d0d0; 
+            margin-bottom: 0.5rem; 
+        }
+        .compound-card .category {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            background: rgba(0, 210, 255, 0.25);
+            color: #00d2ff;
+            font-weight: 500;
+            border: 1px solid rgba(0, 210, 255, 0.4);
+        }
+
+        /* 互动练习 */
+        .practice-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .practice-options select {
+            padding: 0.6rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .practice-options select:hover { border-color: #00d2ff; }
+        .practice-options select option { background: #1a1a3e; color: #ffffff; }
+        .question-card {
+            max-width: 700px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .question-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .question-text {
+            font-size: 1.15rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            color: #e8e8e8;
+        }
+        .choice-options { display: flex; flex-direction: column; gap: 1rem; }
+        .choice-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.2rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 1.05rem;
+        }
+        .choice-option:hover { 
+            background: rgba(255, 255, 255, 0.15); 
+            border-color: rgba(0, 210, 255, 0.5);
+        }
+        .choice-option.selected {
+            border-color: #00d2ff;
+            background: rgba(0, 210, 255, 0.2);
+        }
+        .choice-option input { margin-right: 1rem; transform: scale(1.3); }
+        .fill-input, .balance-input {
+            padding: 0.7rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .balance-equation {
+            font-size: 1.3rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-family: 'Noto Sans SC', monospace;
+        }
+        .balance-input { width: 60px; text-align: center; }
+
+        /* 学习进度 */
+        .progress-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .progress-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .progress-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d2ff 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .progress-card .label { font-size: 0.95rem; color: #a0a0a0; margin-top: 0.5rem; }
+
+        .element-progress { margin-bottom: 2.5rem; }
+        .element-progress h3 { margin-bottom: 1.5rem; color: #ffe66d; }
+        .progress-item {
+            margin-bottom: 1rem;
+        }
+        .progress-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        .progress-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        /* 错题记录 */
+        .wrong-list { max-height: 400px; overflow-y: auto; }
+        .wrong-item {
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 4px solid #ff6b6b;
+            padding: 1rem;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 1rem;
+        }
+        .wrong-item .question { font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .wrong-item .meta { font-size: 0.8rem; color: #a0a0a0; }
+
+        /* 按钮样式 */
+        .btn-primary {
+            padding: 0.7rem 2rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 210, 255, 0.4);
+        }
+        .btn-secondary {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            background: transparent;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+        .hint-btn {
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            border: 1px solid #ffe66d;
+            border-radius: 15px;
+            background: rgba(255, 230, 109, 0.1);
+            color: #ffe66d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+        }
+        .submit-btn:hover { box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4); }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal.show { display: flex; animation: fadeIn 0.3s ease; }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a3e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            text-align: center;
+            position: relative;
+        }
+        .modal-content .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s ease;
+        }
+        .modal-content .close-btn:hover { color: #ffffff; }
+        .modal-icon { font-size: 4rem; margin-bottom: 1.5rem; }
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .modal-message {
+            color: #c8c8c8;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            white-space: pre-line;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            color: #666;
+            padding: 3rem;
+            font-size: 1.1rem;
+        }
+
+        /* 缩放控制 */
+        .zoom-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .zoom-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .zoom-btn:hover {
+            background: rgba(0, 210, 255, 0.3);
+            border-color: #00d2ff;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            /* 基础布局适配 */
+            .header-content { 
+                flex-direction: column; 
+                gap: 0.8rem; 
+                padding: 0 0.5rem;
+            }
+            .logo {
+                font-size: 1.1rem;
+            }
+            .nav-menu { 
+                flex-wrap: wrap; 
+                justify-content: center;
+                gap: 0.3rem;
+            }
+            .nav-link {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            .user-stats { 
+                display: none; 
+            }
+            .main-content { 
+                padding: 0.5rem; 
+            }
+            .section {
+                padding: 1rem 0.5rem;
+            }
+            .section-header h2 { 
+                font-size: 1.4rem; 
+            }
+            .section-header p {
+                font-size: 0.85rem;
+            }
+            
+            /* 可视化模块适配 */
+            .visualization-grid { 
+                grid-template-columns: 1fr; 
+                gap: 1rem;
+            }
+            .chart-container { 
+                min-height: 250px;
+                padding: 0.8rem;
+            }
+            .chart-header {
+                font-size: 1rem;
+                margin-bottom: 0.8rem;
+            }
+            #graphCanvas { 
+                height: 300px; 
+            }
+            .valence-svg {
+                height: 250px !important;
+            }
+            
+            /* 方程式练习适配 */
+            .practice-options { 
+                flex-direction: column; 
+                align-items: center; 
+                gap: 0.5rem;
+            }
+            .practice-btn {
+                width: 100%;
+                padding: 0.8rem;
+                font-size: 0.95rem;
+            }
+            .chem-keyboard { 
+                padding: 0.6rem; 
+                gap: 0.3rem;
+                margin-top: 1rem;
+            }
+            .chem-keyboard button {
+                padding: 0.5rem 0.7rem;
+                font-size: 0.85rem;
+                min-width: 38px;
+                flex: 1;
+            }
+            .chem-keyboard-label {
+                font-size: 0.8rem;
+            }
+            
+            /* 方程式问答格式适配 */
+            .equation-display {
+                padding: 1rem;
+                font-size: 0.95rem;
+            }
+            .equation-question {
+                flex-direction: column;
+                margin-bottom: 1rem;
+            }
+            .question-label {
+                font-size: 1.1rem;
+            }
+            .question-text { 
+                font-size: 1rem; 
+                word-break: break-word;
+            }
+            .template-label {
+                font-size: 1.1rem;
+            }
+            .template-inputs {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .eq-row {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.2rem;
+            }
+            .eq-input { 
+                width: 60px !important; 
+                font-size: 0.85rem; 
+                padding: 0.4rem;
+            }
+            .eq-coeff { 
+                width: 40px !important; 
+            }
+            .eq-plus { 
+                font-size: 0.9rem; 
+            }
+            .eq-equals { 
+                font-size: 1.2rem;
+                margin: 0 0.5rem;
+            }
+            .eq-condition { 
+                width: 60px; 
+                font-size: 0.8rem;
+            }
+            .eq-arrow-row {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+            .eq-arrow-row .eq-condition {
+                position: static;
+                transform: none;
+            }
+            .answer-format {
+                font-size: 0.8rem;
+                padding: 0.5rem;
+            }
+            
+            /* 化合物网格适配 */
+            .compound-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+                gap: 0.6rem;
+            }
+            .compound-card {
+                padding: 0.6rem;
+                font-size: 0.85rem;
+            }
+            
+            /* 练习题适配 */
+            .question-card { 
+                padding: 1rem; 
+            }
+            .choice-option { 
+                padding: 0.7rem 0.8rem; 
+                font-size: 0.9rem;
+                margin-bottom: 0.4rem;
+            }
+            
+            /* 模态框适配 */
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 1rem;
+            }
+            
+            /* 按钮适配 */
+            .btn-primary {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+            .hint-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* 更小屏幕适配 */
+            .nav-link {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.8rem;
+            }
+            .section-header h2 {
+                font-size: 1.2rem;
+            }
+            .eq-input { 
+                width: 50px !important; 
+                font-size: 0.8rem; 
+                padding: 0.3rem;
+            }
+            .eq-coeff { 
+                width: 35px !important; 
+            }
+            .compound-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">⚗️</span>
+                <span>化学转化学习工具</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#visualization" class="nav-link active" data-section="visualization">转化可视化</a>
+                <a href="#equation" class="nav-link" data-section="equation">方程式练习</a>
+                <a href="#properties" class="nav-link" data-section="properties">性质学习</a>
+                <a href="#practice" class="nav-link" data-section="practice">互动练习</a>
+                <a href="#progress" class="nav-link" data-section="progress">学习进度</a>
+            </nav>
+            <div class="user-stats">
+                <span class="stat-item">📚 <span id="studyDays">0</span> 天</span>
+                <span class="stat-item">✅ <span id="completedExercises">0</span> 题</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="main-content">
+        <!-- 转化路径可视化模块 -->
+        <section id="visualization" class="section active">
+            <div class="section-header">
+                <h2>🔗 元素化合物转化路径可视化</h2>
+                <p>交互式展示元素的化合物转化关系与化合价分布</p>
+            </div>
+            
+            <div class="element-selector">
+                <label>选择元素：</label>
+                <select id="elementSelect" onchange="loadElementGraph()">
+                    <option value="sulfur">硫元素 (S)</option>
+                    <option value="sodium">钠元素 (Na)</option>
+                    <option value="iron">铁元素 (Fe)</option>
+                    <option value="chlorine">氯元素 (Cl)</option>
+                    <option value="nitrogen">氮元素 (N)</option>
+                </select>
+            </div>
+
+            <div class="visualization-grid">
+                <div class="chart-container">
+                    <div class="chart-header">📊 化合价-物质类别图</div>
+                    <svg class="valence-svg" id="valenceSvg"></svg>
+                </div>
+                <div class="chart-container" style="min-height: 450px;">
+                    <div class="chart-header">🔄 转化关系图</div>
+                    <div id="graphCanvas"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 化学方程式练习模块 -->
+        <section id="equation" class="section">
+            <div class="section-header">
+                <h2>✏️ 化学方程式练习</h2>
+                <p>根据提示填写反应物或生成物，支持难度分级</p>
+            </div>
+
+            <div class="card equation-container">
+                <div class="card-header">
+                    <span class="card-title">方程式默写练习</span>
+                    <div class="element-selector" style="margin-bottom: 0;">
+                        <select id="equationElement">
+                            <option value="all">全部元素</option>
+                            <option value="sulfur">硫元素</option>
+                            <option value="sodium">钠元素</option>
+                            <option value="iron">铁元素</option>
+                            <option value="chlorine">氯元素</option>
+                            <option value="nitrogen">氮元素</option>
+                        </select>
+                        <select id="equationDifficulty">
+                            <option value="all">全部难度</option>
+                            <option value="easy">简单</option>
+                            <option value="medium">中等</option>
+                            <option value="hard">困难</option>
+                        </select>
+                        <button class="btn-primary" onclick="startEquationPractice()">开始练习</button>
+                    </div>
+                </div>
+                
+                <div id="equationDisplay" class="equation-display">
+                    点击上方"开始练习"按钮开始方程式默写练习
+                </div>
+                
+                <div id="answerInput" class="answer-input" style="text-align: center;"></div>
+                
+                <div id="hintsSection"></div>
+                
+                <!-- 化学下标键盘 -->
+                <div class="chem-keyboard" id="chemKeyboard">
+                    <div class="chem-keyboard-label">💡 快捷输入：下标和状态符号</div>
+                    <!-- 下标按钮 -->
+                    <button class="subscript-btn" onclick="insertSubscript('₂')" title="下标2">₂</button>
+                    <button class="subscript-btn" onclick="insertSubscript('₃')" title="下标3">₃</button>
+                    <button class="subscript-btn" onclick="insertSubscript('₄')" title="下标4">₄</button>
+                    <button class="subscript-btn" onclick="insertSubscript('₁')" title="下标1">₁</button>
+                    <!-- 状态符号 -->
+                    <button onclick="insertSymbol('↑')" title="气体符号">↑</button>
+                    <button onclick="insertSymbol('↓')" title="沉淀符号">↓</button>
+                    <button onclick="insertSymbol('⇌')" title="可逆符号">⇌</button>
+                    <!-- 操作按钮 -->
+                    <button onclick="clearInput()" style="background: rgba(255, 107, 107, 0.2); border-color: rgba(255, 107, 107, 0.4);">清空</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 化合物性质学习模块 -->
+        <section id="properties" class="section">
+            <div class="section-header">
+                <h2>📖 化合物性质学习</h2>
+                <p>浏览和搜索化合物，了解其物理化学性质与常见反应</p>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="compoundSearch" placeholder="搜索化合物名称或化学式..." onkeyup="searchCompounds()">
+            </div>
+            <div class="element-selector" style="margin-top: 1rem; margin-bottom: 1.5rem;">
+                <select id="categoryFilter" onchange="filterByCategory()">
+                    <option value="all">全部类别</option>
+                    <option value="hydride">氢化物</option>
+                    <option value="element">单质</option>
+                    <option value="oxide">氧化物</option>
+                    <option value="acid">酸</option>
+                    <option value="base">碱</option>
+                    <option value="salt">盐</option>
+                </select>
+            </div>
+
+            <div id="compoundGrid" class="compound-grid"></div>
+        </section>
+
+        <!-- 互动练习模块 -->
+        <section id="practice" class="section">
+            <div class="section-header">
+                <h2>🎯 互动练习</h2>
+                <p>多样化题型练习，包含选择题、填空题和方程式配平</p>
+            </div>
+
+            <div class="practice-options">
+                <select id="questionType">
+                    <option value="choice">选择题</option>
+                    <option value="fill">填空题</option>
+                    <option value="balance">方程式配平</option>
+                </select>
+                <select id="practiceDifficulty">
+                    <option value="all">全部难度</option>
+                    <option value="easy">简单</option>
+                    <option value="medium">中等</option>
+                    <option value="hard">困难</option>
+                </select>
+                <select id="practiceElement">
+                    <option value="all">全部元素</option>
+                    <option value="sulfur">硫元素</option>
+                    <option value="sodium">钠元素</option>
+                    <option value="iron">铁元素</option>
+                    <option value="chlorine">氯元素</option>
+                    <option value="nitrogen">氮元素</option>
+                </select>
+                <button class="btn-primary" onclick="startPractice()">开始练习</button>
+            </div>
+
+            <div id="practiceArea">
+                <p class="empty-state">点击上方"开始练习"按钮开始答题</p>
+            </div>
+        </section>
+
+        <!-- 学习进度模块 -->
+        <section id="progress" class="section">
+            <div class="section-header">
+                <h2>📈 学习进度</h2>
+                <p>查看学习统计数据和错题记录</p>
+            </div>
+
+            <div class="progress-overview">
+                <div class="progress-card">
+                    <div class="number" id="totalCorrect">0%</div>
+                    <div class="label">总正确率</div>
+                </div>
+                <div class="progress-card">
+                    <div class="number" id="totalExercises">0</div>
+                    <div class="label">完成练习数</div>
+                </div>
+                <div class="progress-card">
+                    <div class="number" id="studyDays">0</div>
+                    <div class="label">学习天数</div>
+                </div>
+            </div>
+
+            <div class="card element-progress">
+                <h3>📊 各元素掌握程度</h3>
+                <div class="progress-item">
+                    <div class="progress-item-header">
+                        <span>硫元素 (S)</span>
+                        <span id="sulfurPercent">0%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="sulfurProgress"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-item-header">
+                        <span>钠元素 (Na)</span>
+                        <span id="sodiumPercent">0%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="sodiumProgress"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-item-header">
+                        <span>铁元素 (Fe)</span>
+                        <span id="ironPercent">0%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="ironProgress"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-item-header">
+                        <span>氯元素 (Cl)</span>
+                        <span id="chlorinePercent">0%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="chlorineProgress"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-item-header">
+                        <span>氮元素 (N)</span>
+                        <span id="nitrogenPercent">0%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="nitrogenProgress"></div></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <h3 style="color: #ff6b6b; margin-bottom: 1.5rem;">📝 错题记录</h3>
+                <div id="wrongList" class="wrong-list"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>化学元素化合物转换学习工具 | 助力化学学习</p>
+    </footer>
+
+    <!-- 反馈弹窗 -->
+    <div class="modal" id="feedbackModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeFeedback()">×</span>
+            <div class="modal-icon" id="feedbackIcon"></div>
+            <h3 class="modal-title" id="feedbackTitle"></h3>
+            <p class="modal-message" id="feedbackMessage"></p>
+            <button class="btn-primary" onclick="closeFeedback()">确定</button>
+        </div>
+    </div>
+
+    <!-- 节点详情弹窗 -->
+    <div class="modal" id="nodeDetail">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeNodeDetail()">×</span>
+            <h3 class="modal-title" id="nodeTitle"></h3>
+            <div id="nodeContent"></div>
+            <button class="btn-primary" onclick="closeNodeDetail()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 性质详情弹窗 -->
+    <div class="modal" id="propertyDetail">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closePropertyDetail()">×</span>
+            <h3 class="modal-title" id="propertyTitle"></h3>
+            <div id="propertyContent"></div>
+            <button class="btn-primary" onclick="closePropertyDetail()">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        var currentElement = 'sulfur';
+        var zoomLevel = 1;
+        var graphOffset = { x: 0, y: 0 };
+        var currentEquations = [];
+        var currentEquationIndex = 0;
+        var currentQuestions = [];
+        var currentQuestionIndex = 0;
+        var practiceResults = [];
+        var userAnswers = [];
+        var allCompounds = [];
+        var filteredCompounds = [];
+
+        // 化学知识库
+        var compounds = {
+            sulfur: {
+                name: '硫元素',
+                compounds: [
+                    { id: 's-h2s', formula: 'H₂S', name: '硫化氢', category: 'hydride', valence: -2,
+                      properties: { appearance: '无色有臭鸡蛋气味气体', toxicity: '有毒', solubility: '溶于水' },
+                      reactions: ['2H₂S + 3O₂ → 2SO₂ + 2H₂O', 'H₂S + SO₂ → 3S + 2H₂O'] },
+                    { id: 's-s', formula: 'S', name: '硫', category: 'element', valence: 0,
+                      properties: { appearance: '黄色固体', solubility: '不溶于水', use: '制造硫酸、农药' },
+                      reactions: ['S + O₂ → SO₂', 'S + Fe → FeS'] },
+                    { id: 's-so2', formula: 'SO₂', name: '二氧化硫', category: 'oxide', valence: 4,
+                      properties: { appearance: '无色有刺激性气味', toxicity: '有毒', acidBase: '酸性氧化物' },
+                      reactions: ['SO₂ + H₂O → H₂SO₃', '2SO₂ + O₂ ⇌ 2SO₃'] },
+                    { id: 's-so3', formula: 'SO₃', name: '三氧化硫', category: 'oxide', valence: 6,
+                      properties: { appearance: '无色液体或固体', reactivity: '强', acidBase: '酸性氧化物' },
+                      reactions: ['SO₃ + H₂O → H₂SO₄', 'SO₃ + CaO → CaSO₄'] },
+                    { id: 's-h2so3', formula: 'H₂SO₃', name: '亚硫酸', category: 'acid', valence: 4,
+                      properties: { acidity: '中强酸', stability: '不稳定', colorChange: '易被氧化' },
+                      reactions: ['H₂SO₃ → SO₂ + H₂O', 'H₂SO₃ + NaOH → Na₂SO₃ + H₂O'] },
+                    { id: 's-h2so4', formula: 'H₂SO₄', name: '硫酸', category: 'acid', valence: 6,
+                      properties: { acidity: '强酸', dehydrating: '强脱水性', oxidizing: '强氧化性', corrosive: '腐蚀性强' },
+                      reactions: ['H₂SO₄ + NaOH → Na₂SO₄ + H₂O', 'Cu + 2H₂SO₄(浓) → CuSO₄ + SO₂↑ + 2H₂O'] },
+                    { id: 's-na2so3', formula: 'Na₂SO₃', name: '亚硫酸钠', category: 'salt', valence: 4,
+                      properties: { solubility: '易溶于水', reactivity: '还原性' },
+                      reactions: ['Na₂SO₃ + H₂SO₄ → Na₂SO₄ + SO₂↑ + H₂O'] },
+                    { id: 's-na2so4', formula: 'Na₂SO₄', name: '硫酸钠', category: 'salt', valence: 6,
+                      properties: { solubility: '易溶于水', appearance: '白色晶体' },
+                      reactions: ['Na₂SO₄ + BaCl₂ → BaSO₄↓ + 2NaCl'] },
+                    { id: 's-cuso4', formula: 'CuSO₄', name: '硫酸铜', category: 'salt', valence: 6,
+                      properties: { solubility: '易溶于水', appearance: '蓝色晶体', use: '农药、电镀' },
+                      reactions: ['CuSO₄ + Fe → FeSO₄ + Cu', 'CuSO₄ + 5H₂O → CuSO₄·5H₂O'] }
+                ],
+                conversions: [
+                    { from: 's-s', to: 's-so2', condition: 'O₂/点燃' },
+                    { from: 's-so2', to: 's-so3', condition: 'O₂/催化剂' },
+                    { from: 's-so2', to: 's-h2so3', condition: 'H₂O' },
+                    { from: 's-so3', to: 's-h2so4', condition: 'H₂O' },
+                    { from: 's-h2so4', to: 's-na2so4', condition: 'NaOH' },
+                    { from: 's-h2so3', to: 's-na2so3', condition: 'NaOH' },
+                    { from: 's-na2so3', to: 's-so2', condition: 'H⁺' },
+                    { from: 's-s', to: 's-h2s', condition: 'H₂/加热' },
+                    { from: 's-h2s', to: 's-so2', condition: 'O₂/点燃' }
+                ]
+            },
+            sodium: {
+                name: '钠元素',
+                compounds: [
+                    { id: 'na-na', formula: 'Na', name: '钠', category: 'element', valence: 0,
+                      properties: { appearance: '银白色金属', reactivity: '活泼', density: '比水小', meltingPoint: '低' },
+                      reactions: ['2Na + O₂ → Na₂O₂', '2Na + 2H₂O → 2NaOH + H₂↑'] },
+                    { id: 'na-na2o', formula: 'Na₂O', name: '氧化钠', category: 'oxide', valence: 1,
+                      properties: { appearance: '白色固体', reactivity: '与水反应' },
+                      reactions: ['Na₂O + H₂O → 2NaOH', 'Na₂O + CO₂ → Na₂CO₃'] },
+                    { id: 'na-na2o2', formula: 'Na₂O₂', name: '过氧化钠', category: 'oxide', valence: 1,
+                      properties: { appearance: '淡黄色固体', oxidizing: '强氧化性', use: '供氧剂' },
+                      reactions: ['2Na₂O₂ + 2H₂O → 4NaOH + O₂↑', '2Na₂O₂ + 2CO₂ → 2Na₂CO₃ + O₂'] },
+                    { id: 'na-naoh', formula: 'NaOH', name: '氢氧化钠', category: 'base', valence: 1,
+                      properties: { appearance: '白色固体', solubility: '易溶于水', acidBase: '强碱', corrosive: '腐蚀性' },
+                      reactions: ['NaOH + HCl → NaCl + H₂O', '2NaOH + CO₂ → Na₂CO₃ + H₂O'] },
+                    { id: 'na-na2co3', formula: 'Na₂CO₃', name: '碳酸钠', category: 'salt', valence: 1,
+                      properties: { appearance: '白色粉末', solubility: '易溶于水', acidBase: '弱碱性' },
+                      reactions: ['Na₂CO₃ + 2HCl → 2NaCl + CO₂↑ + H₂O', 'Na₂CO₃ + Ca(OH)₂ → CaCO₃↓ + 2NaOH'] },
+                    { id: 'na-nahco3', formula: 'NaHCO₃', name: '碳酸氢钠', category: 'salt', valence: 1,
+                      properties: { appearance: '白色晶体', solubility: '溶于水', acidBase: '弱碱性', thermalDecomposition: '受热分解' },
+                      reactions: ['NaHCO₃ + HCl → NaCl + CO₂↑ + H₂O', '2NaHCO₃ → Na₂CO₃ + CO₂↑ + H₂O'] },
+                    { id: 'na-nacl', formula: 'NaCl', name: '氯化钠', category: 'salt', valence: 1,
+                      properties: { appearance: '白色晶体', solubility: '易溶于水', use: '调味品、化工原料' },
+                      reactions: ['NaCl + AgNO₃ → AgCl↓ + NaNO₃'] }
+                ],
+                conversions: [
+                    { from: 'na-na', to: 'na-na2o', condition: 'O₂/常温' },
+                    { from: 'na-na', to: 'na-na2o2', condition: 'O₂/加热' },
+                    { from: 'na-na', to: 'na-naoh', condition: 'H₂O' },
+                    { from: 'na-na2o', to: 'na-naoh', condition: 'H₂O' },
+                    { from: 'na-na2o2', to: 'na-naoh', condition: 'H₂O' },
+                    { from: 'na-naoh', to: 'na-na2co3', condition: 'CO₂' },
+                    { from: 'na-na2co3', to: 'na-nahco3', condition: 'CO₂+H₂O' },
+                    { from: 'na-nahco3', to: 'na-na2co3', condition: '△' },
+                    { from: 'na-na2co3', to: 'na-nacl', condition: 'HCl' },
+                    { from: 'na-naoh', to: 'na-nacl', condition: 'HCl' }
+                ]
+            },
+            iron: {
+                name: '铁元素',
+                compounds: [
+                    { id: 'fe-fe', formula: 'Fe', name: '铁', category: 'element', valence: 0,
+                      properties: { appearance: '银白色金属', magnetic: '有磁性', reactivity: '中等活泼' },
+                      reactions: ['3Fe + 2O₂ → Fe₃O₄', 'Fe + 2HCl → FeCl₂ + H₂↑'] },
+                    { id: 'fe-feo', formula: 'FeO', name: '氧化亚铁', category: 'oxide', valence: 2,
+                      properties: { appearance: '黑色粉末', oxidation: '易被氧化' },
+                      reactions: ['FeO + 2HCl → FeCl₂ + H₂O', '6FeO + O₂ → 2Fe₃O₄'] },
+                    { id: 'fe-fe2o3', formula: 'Fe₂O₃', name: '氧化铁', category: 'oxide', valence: 3,
+                      properties: { appearance: '红棕色粉末', use: '颜料、炼铁原料' },
+                      reactions: ['Fe₂O₃ + 3CO → 2Fe + 3CO₂', 'Fe₂O₃ + 6HCl → 2FeCl₃ + 3H₂O'] },
+                    { id: 'fe-fe3o4', formula: 'Fe₃O₄', name: '四氧化三铁', category: 'oxide', valence: '2,3',
+                      properties: { appearance: '黑色晶体', magnetic: '有磁性', use: '磁铁' },
+                      reactions: ['3Fe + 2O₂ → Fe₃O₄', 'Fe₃O₄ + 4CO → 3Fe + 4CO₂'] },
+                    { id: 'fe-fecl2', formula: 'FeCl₂', name: '氯化亚铁', category: 'salt', valence: 2,
+                      properties: { appearance: '浅绿色晶体', solubility: '易溶于水', oxidation: '易被氧化' },
+                      reactions: ['Fe + 2HCl → FeCl₂ + H₂↑', '2FeCl₂ + Cl₂ → 2FeCl₃'] },
+                    { id: 'fe-fecl3', formula: 'FeCl₃', name: '氯化铁', category: 'salt', valence: 3,
+                      properties: { appearance: '棕黄色晶体', solubility: '易溶于水', hydrolysis: '易水解' },
+                      reactions: ['Fe₂O₃ + 6HCl → 2FeCl₃ + 3H₂O', 'Fe + 2FeCl₃ → 3FeCl₂'] },
+                    { id: 'fe-feoh2', formula: 'Fe(OH)₂', name: '氢氧化亚铁', category: 'base', valence: 2,
+                      properties: { appearance: '白色沉淀', oxidation: '易被氧化', colorChange: '白→灰绿→红褐' },
+                      reactions: ['FeCl₂ + 2NaOH → Fe(OH)₂↓ + 2NaCl', '4Fe(OH)₂ + O₂ + 2H₂O → 4Fe(OH)₃'] },
+                    { id: 'fe-feoh3', formula: 'Fe(OH)₃', name: '氢氧化铁', category: 'base', valence: 3,
+                      properties: { appearance: '红褐色沉淀', thermalDecomposition: '受热分解' },
+                      reactions: ['FeCl₃ + 3NaOH → Fe(OH)₃↓ + 3NaCl', '2Fe(OH)₃ → Fe₂O₃ + 3H₂O'] }
+                ],
+                conversions: [
+                    { from: 'fe-fe', to: 'fe-feo', condition: 'O₂/不足' },
+                    { from: 'fe-fe', to: 'fe-fe3o4', condition: 'O₂/点燃' },
+                    { from: 'fe-fe', to: 'fe-fecl2', condition: 'HCl' },
+                    { from: 'fe-feo', to: 'fe-fe2o3', condition: 'O₂' },
+                    { from: 'fe-fe2o3', to: 'fe-fe', condition: 'CO/高温' },
+                    { from: 'fe-fe2o3', to: 'fe-fecl3', condition: 'HCl' },
+                    { from: 'fe-fecl2', to: 'fe-feoh2', condition: 'NaOH' },
+                    { from: 'fe-fecl3', to: 'fe-feoh3', condition: 'NaOH' },
+                    { from: 'fe-feoh2', to: 'fe-feoh3', condition: 'O₂+H₂O' },
+                    { from: 'fe-fecl2', to: 'fe-fecl3', condition: 'Cl₂' },
+                    { from: 'fe-fe', to: 'fe-fecl3', condition: 'Cl₂' }
+                ]
+            },
+            chlorine: {
+                name: '氯元素',
+                compounds: [
+                    { id: 'cl-cl2', formula: 'Cl₂', name: '氯气', category: 'element', valence: 0,
+                      properties: { appearance: '黄绿色气体', toxicity: '有毒', oxidizing: '强氧化性' },
+                      reactions: ['Cl₂ + H₂ → 2HCl', 'Cl₂ + H₂O ⇌ HCl + HClO'] },
+                    { id: 'cl-hcl', formula: 'HCl', name: '氯化氢', category: 'acid', valence: -1,
+                      properties: { appearance: '无色气体', acidity: '强酸', solubility: '极易溶于水' },
+                      reactions: ['HCl + NaOH → NaCl + H₂O', 'MnO₂ + 4HCl → Cl₂↑ + MnCl₂ + 2H₂O'] },
+                    { id: 'cl-hclo', formula: 'HClO', name: '次氯酸', category: 'acid', valence: 1,
+                      properties: { acidity: '弱酸', stability: '不稳定', oxidizing: '强氧化性', use: '漂白剂' },
+                      reactions: ['Cl₂ + H₂O ⇌ HCl + HClO', '2HClO → 2HCl + O₂↑'] },
+                    { id: 'cl-nacl', formula: 'NaCl', name: '氯化钠', category: 'salt', valence: -1,
+                      properties: { appearance: '白色晶体', solubility: '易溶于水', use: '食盐' },
+                      reactions: ['2NaCl + 2H₂O → 2NaOH + H₂↑ + Cl₂↑'] },
+                    { id: 'cl-naclo', formula: 'NaClO', name: '次氯酸钠', category: 'salt', valence: 1,
+                      properties: { oxidizing: '氧化性', use: '漂白剂、消毒剂' },
+                      reactions: ['Cl₂ + 2NaOH → NaCl + NaClO + H₂O'] },
+                    { id: 'cl-cacl2', formula: 'Ca(ClO)₂', name: '次氯酸钙', category: 'salt', valence: 1,
+                      properties: { appearance: '白色粉末', use: '漂白粉主要成分' },
+                      reactions: ['2Cl₂ + 2Ca(OH)₂ → CaCl₂ + Ca(ClO)₂ + 2H₂O'] },
+                    { id: 'cl-mncl2', formula: 'MnCl₂', name: '氯化锰', category: 'salt', valence: -1,
+                      properties: { appearance: '粉红色晶体', solubility: '易溶于水' },
+                      reactions: ['MnO₂ + 4HCl → Cl₂↑ + MnCl₂ + 2H₂O'] }
+                ],
+                conversions: [
+                    { from: 'cl-cl2', to: 'cl-hcl', condition: 'H₂/点燃' },
+                    { from: 'cl-cl2', to: 'cl-hclo', condition: 'H₂O' },
+                    { from: 'cl-cl2', to: 'cl-naclo', condition: 'NaOH/冷' },
+                    { from: 'cl-hcl', to: 'cl-cl2', condition: 'MnO₂/△' },
+                    { from: 'cl-hclo', to: 'cl-hcl', condition: '光照' },
+                    { from: 'cl-naclo', to: 'cl-hclo', condition: 'H⁺' },
+                    { from: 'cl-cl2', to: 'cl-cacl2', condition: 'Ca(OH)₂' },
+                    { from: 'cl-cl2', to: 'cl-nacl', condition: 'Na' }
+                ]
+            },
+            nitrogen: {
+                name: '氮元素',
+                compounds: [
+                    { id: 'n-n2', formula: 'N₂', name: '氮气', category: 'element', valence: 0,
+                      properties: { appearance: '无色气体', stability: '稳定', use: '保护气' },
+                      reactions: ['N₂ + 3H₂ ⇌ 2NH₃', 'N₂ + O₂ → 2NO'] },
+                    { id: 'n-nh3', formula: 'NH₃', name: '氨气', category: 'hydride', valence: -3,
+                      properties: { appearance: '无色有刺激性气味', solubility: '极易溶于水', acidBase: '弱碱性' },
+                      reactions: ['NH₃ + HCl → NH₄Cl', '4NH₃ + 5O₂ → 4NO + 6H₂O'] },
+                    { id: 'n-no', formula: 'NO', name: '一氧化氮', category: 'oxide', valence: 2,
+                      properties: { appearance: '无色气体', toxicity: '有毒', oxidation: '易被氧化' },
+                      reactions: ['N₂ + O₂ → 2NO', '2NO + O₂ → 2NO₂'] },
+                    { id: 'n-no2', formula: 'NO₂', name: '二氧化氮', category: 'oxide', valence: 4,
+                      properties: { appearance: '红棕色气体', toxicity: '有毒', acidBase: '酸性' },
+                      reactions: ['2NO + O₂ → 2NO₂', '3NO₂ + H₂O → 2HNO₃ + NO'] },
+                    { id: 'n-hno3', formula: 'HNO₃', name: '硝酸', category: 'acid', valence: 5,
+                      properties: { appearance: '无色液体', acidity: '强酸', oxidizing: '强氧化性', corrosive: '腐蚀性' },
+                      reactions: ['Cu + 4HNO₃(浓) → Cu(NO₃)₂ + 2NO₂↑ + 2H₂O', 'Fe + 6HNO₃(浓) → Fe(NO₃)₃ + 3NO₂↑ + 3H₂O'] },
+                    { id: 'n-nh4cl', formula: 'NH₄Cl', name: '氯化铵', category: 'salt', valence: -3,
+                      properties: { appearance: '白色晶体', solubility: '易溶于水', thermalDecomposition: '受热分解' },
+                      reactions: ['NH₃ + HCl → NH₄Cl', 'NH₄Cl → NH₃↑ + HCl↑'] },
+                    { id: 'n-nano3', formula: 'NaNO₃', name: '硝酸钠', category: 'salt', valence: 5,
+                      properties: { appearance: '白色晶体', solubility: '易溶于水' },
+                      reactions: ['NaOH + HNO₃ → NaNO₃ + H₂O'] }
+                ],
+                conversions: [
+                    { from: 'n-n2', to: 'n-nh3', condition: 'H₂/高温高压' },
+                    { from: 'n-n2', to: 'n-no', condition: '放电' },
+                    { from: 'n-no', to: 'n-no2', condition: 'O₂' },
+                    { from: 'n-no2', to: 'n-hno3', condition: 'H₂O' },
+                    { from: 'n-nh3', to: 'n-no', condition: 'O₂/催化剂' },
+                    { from: 'n-nh3', to: 'n-nh4cl', condition: 'HCl' },
+                    { from: 'n-nh4cl', to: 'n-nh3', condition: '△' },
+                    { from: 'n-hno3', to: 'n-nano3', condition: 'NaOH' },
+                    { from: 'n-no2', to: 'n-no', condition: 'H₂O' }
+                ]
+            }
+        };
+
+        // 方程式数据库
+        var equations = {
+            sulfur: [
+                { id: 's1', description: '硫单质与氧气点燃反应', equation: 'S + O₂ → SO₂', conditions: ['点燃'], type: '化合反应', difficulty: 'easy',
+                  reactants: ['S', 'O₂'], products: ['SO₂'] },
+                { id: 's2', description: '二氧化硫与氧气催化反应', equation: '2SO₂ + O₂ ⇌ 2SO₃', conditions: ['催化剂'], type: '化合反应', difficulty: 'medium',
+                  reactants: ['SO₂', 'O₂'], products: ['SO₃'] },
+                { id: 's3', description: '二氧化硫与水反应', equation: 'SO₂ + H₂O → H₂SO₃', conditions: [], type: '化合反应', difficulty: 'easy',
+                  reactants: ['SO₂', 'H₂O'], products: ['H₂SO₃'] },
+                { id: 's4', description: '三氧化硫与水反应', equation: 'SO₃ + H₂O → H₂SO₄', conditions: [], type: '化合反应', difficulty: 'easy',
+                  reactants: ['SO₃', 'H₂O'], products: ['H₂SO₄'] },
+                { id: 's5', description: '铜与浓硫酸加热反应', equation: 'Cu + 2H₂SO₄(浓) → CuSO₄ + SO₂↑ + 2H₂O', conditions: ['△'], type: '氧化还原反应', difficulty: 'hard',
+                  reactants: ['Cu', 'H₂SO₄'], products: ['CuSO₄', 'SO₂', 'H₂O'] },
+                { id: 's6', description: '亚硫酸钠与硫酸反应', equation: 'Na₂SO₃ + H₂SO₄ → Na₂SO₄ + SO₂↑ + H₂O', conditions: [], type: '复分解反应', difficulty: 'medium',
+                  reactants: ['Na₂SO₃', 'H₂SO₄'], products: ['Na₂SO₄', 'SO₂', 'H₂O'] },
+                { id: 's7', description: '硫化氢在氧气中完全燃烧', equation: '2H₂S + 3O₂ → 2SO₂ + 2H₂O', conditions: ['点燃'], type: '氧化反应', difficulty: 'medium',
+                  reactants: ['H₂S', 'O₂'], products: ['SO₂', 'H₂O'] },
+                { id: 's8', description: '硫化氢与二氧化硫反应', equation: 'H₂S + SO₂ → 3S + 2H₂O', conditions: [], type: '归中反应', difficulty: 'hard',
+                  reactants: ['H₂S', 'SO₂'], products: ['S', 'H₂O'] }
+            ],
+            sodium: [
+                { id: 'na1', description: '钠在氧气中燃烧', equation: '2Na + O₂ → Na₂O₂', conditions: ['点燃'], type: '化合反应', difficulty: 'easy',
+                  reactants: ['Na', 'O₂'], products: ['Na₂O₂'] },
+                { id: 'na2', description: '钠与水反应', equation: '2Na + 2H₂O → 2NaOH + H₂↑', conditions: [], type: '置换反应', difficulty: 'easy',
+                  reactants: ['Na', 'H₂O'], products: ['NaOH', 'H₂'] },
+                { id: 'na3', description: '氧化钠与水反应', equation: 'Na₂O + H₂O → 2NaOH', conditions: [], type: '化合反应', difficulty: 'easy',
+                  reactants: ['Na₂O', 'H₂O'], products: ['NaOH'] },
+                { id: 'na4', description: '过氧化钠与水反应', equation: '2Na₂O₂ + 2H₂O → 4NaOH + O₂↑', conditions: [], type: '歧化反应', difficulty: 'medium',
+                  reactants: ['Na₂O₂', 'H₂O'], products: ['NaOH', 'O₂'] },
+                { id: 'na5', description: '碳酸氢钠受热分解', equation: '2NaHCO₃ → Na₂CO₃ + CO₂↑ + H₂O', conditions: ['△'], type: '分解反应', difficulty: 'easy',
+                  reactants: ['NaHCO₃'], products: ['Na₂CO₃', 'CO₂', 'H₂O'] },
+                { id: 'na6', description: '碳酸钠与盐酸反应', equation: 'Na₂CO₃ + 2HCl → 2NaCl + CO₂↑ + H₂O', conditions: [], type: '复分解反应', difficulty: 'easy',
+                  reactants: ['Na₂CO₃', 'HCl'], products: ['NaCl', 'CO₂', 'H₂O'] },
+                { id: 'na7', description: '氢氧化钠与少量二氧化碳反应', equation: 'NaOH + CO₂ → NaHCO₃', conditions: [], type: '化合反应', difficulty: 'medium',
+                  reactants: ['NaOH', 'CO₂'], products: ['NaHCO₃'] },
+                { id: 'na8', description: '氢氧化钠与过量二氧化碳反应', equation: '2NaOH + CO₂ → Na₂CO₃ + H₂O', conditions: [], type: '复分解反应', difficulty: 'easy',
+                  reactants: ['NaOH', 'CO₂'], products: ['Na₂CO₃', 'H₂O'] }
+            ],
+            iron: [
+                { id: 'fe1', description: '铁在氧气中燃烧', equation: '3Fe + 2O₂ → Fe₃O₄', conditions: ['点燃'], type: '化合反应', difficulty: 'easy',
+                  reactants: ['Fe', 'O₂'], products: ['Fe₃O₄'] },
+                { id: 'fe2', description: '铁与盐酸反应', equation: 'Fe + 2HCl → FeCl₂ + H₂↑', conditions: [], type: '置换反应', difficulty: 'easy',
+                  reactants: ['Fe', 'HCl'], products: ['FeCl₂', 'H₂'] },
+                { id: 'fe3', description: '氧化铁与一氧化碳高温反应', equation: 'Fe₂O₃ + 3CO → 2Fe + 3CO₂', conditions: ['高温'], type: '还原反应', difficulty: 'medium',
+                  reactants: ['Fe₂O₃', 'CO'], products: ['Fe', 'CO₂'] },
+                { id: 'fe4', description: '氯化亚铁与氯气反应', equation: '2FeCl₂ + Cl₂ → 2FeCl₃', conditions: [], type: '氧化反应', difficulty: 'medium',
+                  reactants: ['FeCl₂', 'Cl₂'], products: ['FeCl₃'] },
+                { id: 'fe5', description: '铁与氯化铁反应', equation: 'Fe + 2FeCl₃ → 3FeCl₂', conditions: [], type: '归中反应', difficulty: 'medium',
+                  reactants: ['Fe', 'FeCl₃'], products: ['FeCl₂'] },
+                { id: 'fe6', description: '氯化亚铁与氢氧化钠反应', equation: 'FeCl₂ + 2NaOH → Fe(OH)₂↓ + 2NaCl', conditions: [], type: '复分解反应', difficulty: 'easy',
+                  reactants: ['FeCl₂', 'NaOH'], products: ['Fe(OH)₂', 'NaCl'] },
+                { id: 'fe7', description: '氢氧化亚铁在空气中被氧化', equation: '4Fe(OH)₂ + O₂ + 2H₂O → 4Fe(OH)₃', conditions: [], type: '氧化还原反应', difficulty: 'medium',
+                  reactants: ['Fe(OH)₂', 'O₂', 'H₂O'], products: ['Fe(OH)₃'] },
+                { id: 'fe8', description: '氢氧化铁受热分解', equation: '2Fe(OH)₃ → Fe₂O₃ + 3H₂O', conditions: ['△'], type: '分解反应', difficulty: 'easy',
+                  reactants: ['Fe(OH)₃'], products: ['Fe₂O₃', 'H₂O'] }
+            ],
+            chlorine: [
+                { id: 'cl1', description: '氢气在氯气中燃烧', equation: 'H₂ + Cl₂ → 2HCl', conditions: ['点燃或光照'], type: '化合反应', difficulty: 'easy',
+                  reactants: ['H₂', 'Cl₂'], products: ['HCl'] },
+                { id: 'cl2', description: '二氧化锰与浓盐酸加热制氯气', equation: 'MnO₂ + 4HCl(浓) → Cl₂↑ + MnCl₂ + 2H₂O', conditions: ['△'], type: '氧化还原反应', difficulty: 'hard',
+                  reactants: ['MnO₂', 'HCl'], products: ['Cl₂', 'MnCl₂', 'H₂O'] },
+                { id: 'cl3', description: '氯气与水反应', equation: 'Cl₂ + H₂O ⇌ HCl + HClO', conditions: [], type: '歧化反应', difficulty: 'medium',
+                  reactants: ['Cl₂', 'H₂O'], products: ['HCl', 'HClO'] },
+                { id: 'cl4', description: '氯气与冷氢氧化钠溶液反应', equation: 'Cl₂ + 2NaOH → NaCl + NaClO + H₂O', conditions: ['冷'], type: '歧化反应', difficulty: 'medium',
+                  reactants: ['Cl₂', 'NaOH'], products: ['NaCl', 'NaClO', 'H₂O'] },
+                { id: 'cl5', description: '氯气与热氢氧化钠溶液反应', equation: '3Cl₂ + 6NaOH → 5NaCl + NaClO₃ + 3H₂O', conditions: ['热'], type: '歧化反应', difficulty: 'hard',
+                  reactants: ['Cl₂', 'NaOH'], products: ['NaCl', 'NaClO₃', 'H₂O'] },
+                { id: 'cl6', description: '氯气与氢氧化钙反应制漂白粉', equation: '2Cl₂ + 2Ca(OH)₂ → CaCl₂ + Ca(ClO)₂ + 2H₂O', conditions: [], type: '歧化反应', difficulty: 'medium',
+                  reactants: ['Cl₂', 'Ca(OH)₂'], products: ['CaCl₂', 'Ca(ClO)₂', 'H₂O'] },
+                { id: 'cl7', description: '次氯酸光照分解', equation: '2HClO → 2HCl + O₂↑', conditions: ['光照'], type: '分解反应', difficulty: 'medium',
+                  reactants: ['HClO'], products: ['HCl', 'O₂'] },
+                { id: 'cl8', description: '铁在氯气中燃烧', equation: '2Fe + 3Cl₂ → 2FeCl₃', conditions: ['△'], type: '化合反应', difficulty: 'medium',
+                  reactants: ['Fe', 'Cl₂'], products: ['FeCl₃'] }
+            ],
+            nitrogen: [
+                { id: 'n1', description: '工业合成氨', equation: 'N₂ + 3H₂ ⇌ 2NH₃', conditions: ['高温高压催化剂'], type: '合成氨', difficulty: 'hard',
+                  reactants: ['N₂', 'H₂'], products: ['NH₃'] },
+                { id: 'n2', description: '氮气与氧气放电反应', equation: 'N₂ + O₂ → 2NO', conditions: ['放电'], type: '化合反应', difficulty: 'medium',
+                  reactants: ['N₂', 'O₂'], products: ['NO'] },
+                { id: 'n3', description: '一氧化氮与氧气反应', equation: '2NO + O₂ → 2NO₂', conditions: [], type: '化合反应', difficulty: 'easy',
+                  reactants: ['NO', 'O₂'], products: ['NO₂'] },
+                { id: 'n4', description: '二氧化氮与水反应', equation: '3NO₂ + H₂O → 2HNO₃ + NO', conditions: [], type: '歧化反应', difficulty: 'medium',
+                  reactants: ['NO₂', 'H₂O'], products: ['HNO₃', 'NO'] },
+                { id: 'n5', description: '氨气与氯化氢反应', equation: 'NH₃ + HCl → NH₄Cl', conditions: [], type: '化合反应', difficulty: 'easy',
+                  reactants: ['NH₃', 'HCl'], products: ['NH₄Cl'] },
+                { id: 'n6', description: '氯化铵受热分解', equation: 'NH₄Cl → NH₃↑ + HCl↑', conditions: ['△'], type: '分解反应', difficulty: 'easy',
+                  reactants: ['NH₄Cl'], products: ['NH₃', 'HCl'] },
+                { id: 'n7', description: '氨气催化氧化', equation: '4NH₃ + 5O₂ → 4NO + 6H₂O', conditions: ['△催化剂'], type: '氧化反应', difficulty: 'hard',
+                  reactants: ['NH₃', 'O₂'], products: ['NO', 'H₂O'] },
+                { id: 'n8', description: '实验室制取氨气', equation: 'NH₄Cl + Ca(OH)₂ → CaCl₂ + 2NH₃↑ + 2H₂O', conditions: ['△'], type: '复分解反应', difficulty: 'medium',
+                  reactants: ['NH₄Cl', 'Ca(OH)₂'], products: ['CaCl₂', 'NH₃', 'H₂O'] }
+            ]
+        };
+
+        // 练习题目数据库
+        var practiceQuestions = {
+            choice: [
+                { id: 'q1', question: '下列物质中，属于酸性氧化物的是', options: ['Na₂O', 'SO₂', 'Fe₃O₄', 'CaO'], answer: 'B',
+                  explanation: 'SO₂能与碱反应生成盐和水，属于酸性氧化物。', difficulty: 'easy', element: 'sulfur' },
+                { id: 'q2', question: '下列反应中，属于置换反应的是', options: ['2H₂O → 2H₂↑ + O₂↑', 'Fe + CuSO₄ → FeSO₄ + Cu', 'NaOH + HCl → NaCl + H₂O', 'CaCO₃ → CaO + CO₂↑'], answer: 'B',
+                  explanation: '置换反应是单质与化合物反应生成新的单质和化合物。', difficulty: 'easy', element: 'iron' },
+                { id: 'q3', question: '关于钠的性质，下列说法正确的是', options: ['钠在空气中燃烧生成Na₂O', '钠与水反应生成O₂', '钠的密度比水大', '钠是银白色金属'], answer: 'D',
+                  explanation: '钠是银白色金属，在空气中燃烧生成Na₂O₂，与水反应生成H₂。', difficulty: 'easy', element: 'sodium' },
+                { id: 'q4', question: '下列物质中，不能与盐酸反应的是', options: ['NaOH', 'CaCO₃', 'Cu', 'Fe'], answer: 'C',
+                  explanation: '铜的活动性在氢之后，不能与稀盐酸反应。', difficulty: 'medium', element: 'chlorine' },
+                { id: 'q5', question: '实验室制取氨气的常用方法是', options: ['加热NH₄Cl', 'NH₄Cl与Ca(OH)₂共热', 'N₂与H₂反应', 'NH₄HCO₃分解'], answer: 'B',
+                  explanation: '实验室常用NH₄Cl和Ca(OH)₂固体混合加热制取氨气。', difficulty: 'medium', element: 'nitrogen' },
+                { id: 'q6', question: '关于Fe(OH)₂的说法错误的是', options: ['白色沉淀', '在空气中易被氧化', '能与NaOH反应', '由FeCl₂与NaOH反应生成'], answer: 'C',
+                  explanation: 'Fe(OH)₂本身就是碱，不能与NaOH反应。', difficulty: 'medium', element: 'iron' },
+                { id: 'q7', question: '浓硫酸表现出脱水性的是', options: ['与NaOH反应', '与Cu反应', '使蔗糖变黑', '与NaCl反应'], answer: 'C',
+                  explanation: '浓硫酸使蔗糖变黑是因为它将蔗糖中的H和O按2:1比例脱去。', difficulty: 'hard', element: 'sulfur' },
+                { id: 'q8', question: '关于氯水的性质，下列说法正确的是', options: ['氯水呈无色', '氯水只含Cl₂分子', '氯水具有漂白性', '氯水久置后酸性减弱'], answer: 'C',
+                  explanation: '氯水因含HClO而具有漂白性。', difficulty: 'hard', element: 'chlorine' }
+            ],
+            fill: [
+                { id: 'f1', question: '硫在空气中燃烧生成______，在纯氧中燃烧生成______（填化学式）', answers: ['SO₂', 'SO₂'], difficulty: 'easy', element: 'sulfur' },
+                { id: 'f2', question: '钠与水反应的化学方程式为______', answers: ['2Na + 2H₂O → 2NaOH + H₂↑'], difficulty: 'medium', element: 'sodium' },
+                { id: 'f3', question: 'Fe(OH)₂在空气中被氧化的颜色变化是：白色→______→______', answers: ['灰绿色', '红褐色'], difficulty: 'easy', element: 'iron' },
+                { id: 'f4', question: '氯气与水反应的化学方程式为______', answers: ['Cl₂ + H₂O ⇌ HCl + HClO'], difficulty: 'medium', element: 'chlorine' },
+                { id: 'f5', question: '工业合成氨的条件是______、______和______', answers: ['高温', '高压', '催化剂'], difficulty: 'hard', element: 'nitrogen' },
+                { id: 'f6', question: '浓硫酸具有______性、______性和______性', answers: ['强氧化', '脱水', '吸水'], difficulty: 'medium', element: 'sulfur' },
+                { id: 'f7', question: '碳酸氢钠受热分解的化学方程式为______', answers: ['2NaHCO₃ → Na₂CO₃ + CO₂↑ + H₂O'], difficulty: 'easy', element: 'sodium' }
+            ],
+            balance: [
+                { id: 'b1', equation: '_Fe + _O₂ → _Fe₃O₄', coefficients: ['3', '2', '1'], difficulty: 'easy', element: 'iron' },
+                { id: 'b2', equation: '_SO₂ + _O₂ → _SO₃', coefficients: ['2', '1', '2'], difficulty: 'easy', element: 'sulfur' },
+                { id: 'b3', equation: '_NaOH + _CO₂ → _Na₂CO₃ + _H₂O', coefficients: ['2', '1', '1', '1'], difficulty: 'easy', element: 'sodium' },
+                { id: 'b4', equation: '_NH₃ + _O₂ → _NO + _H₂O', coefficients: ['4', '5', '4', '6'], difficulty: 'hard', element: 'nitrogen' },
+                { id: 'b5', equation: '_Cl₂ + _NaOH → _NaCl + _NaClO + _H₂O', coefficients: ['1', '2', '1', '1', '1'], difficulty: 'medium', element: 'chlorine' },
+                { id: 'b6', equation: '_Fe₂O₃ + _CO → _Fe + _CO₂', coefficients: ['1', '3', '2', '3'], difficulty: 'easy', element: 'iron' }
+            ]
+        };
+
+        // 数据访问函数
+        function getCompoundData(element) { return compounds[element] || null; }
+        function getEquations(element, difficulty) {
+            var eqList = [];
+            if (element === 'all') {
+                Object.keys(equations).forEach(function(key) { eqList = eqList.concat(equations[key]); });
+            } else if (equations[element]) { eqList = equations[element]; }
+            if (difficulty && difficulty !== 'all') { return eqList.filter(function(eq) { return eq.difficulty === difficulty; }); }
+            return eqList;
+        }
+        function getPracticeQuestions(type, difficulty, element) {
+            var q = practiceQuestions[type] || [];
+            if (difficulty && difficulty !== 'all') { q = q.filter(function(x) { return x.difficulty === difficulty; }); }
+            if (element && element !== 'all') { q = q.filter(function(x) { return x.element === element; }); }
+            return shuffleArray(q);
+        }
+        function shuffleArray(array) {
+            var arr = array.slice();
+            for (var i = arr.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+            }
+            return arr;
+        }
+        function getCategoryName(category) {
+            var names = { hydride: '氢化物', element: '单质', oxide: '氧化物', acid: '酸', base: '碱', salt: '盐' };
+            return names[category] || category;
+        }
+        function getPropertyName(key) {
+            var names = { appearance: '外观', solubility: '溶解性', toxicity: '毒性', acidBase: '酸碱性', meltingPoint: '熔点',
+                         acidity: '酸性', stability: '稳定性', dehydrating: '脱水性', oxidizing: '氧化性', use: '用途',
+                         density: '密度', reactivity: '反应性', corrosive: '腐蚀性', magnetic: '磁性', colorChange: '颜色变化',
+                         thermalDecomposition: '热分解性', hydrolysis: '水解性', oxidation: '易氧化性' };
+            return names[key] || key;
+        }
+
+        // 存储函数
+        function getLearningStats() {
+            var stats = localStorage.getItem('chemLearningStats');
+            return stats ? JSON.parse(stats) : { elements: {} };
+        }
+        function saveLearningStats(stats) { localStorage.setItem('chemLearningStats', JSON.stringify(stats)); }
+        function updateProgress(element, correct) {
+            var stats = getLearningStats();
+            if (!stats.elements[element]) { stats.elements[element] = { correct: 0, total: 0 }; }
+            stats.elements[element].total++;
+            if (correct) { stats.elements[element].correct++; }
+            saveLearningStats(stats);
+            if (typeof updateHeaderStats === 'function') { updateHeaderStats(); }
+        }
+        function getWrongQuestions() {
+            var wrong = localStorage.getItem('chemWrongQuestions');
+            return wrong ? JSON.parse(wrong) : [];
+        }
+        function saveWrongQuestions(wrong) { localStorage.setItem('chemWrongQuestions', JSON.stringify(wrong)); }
+        function addWrongQuestion(question) {
+            var list = getWrongQuestions();
+            var exists = list.some(function(x) { return x.question === question.question; });
+            if (!exists) {
+                list.push({ id: Date.now(), type: question.type, question: question.question, answer: question.answer,
+                           userAnswer: question.userAnswer, difficulty: question.difficulty, element: question.element,
+                           wrongCount: 1, lastWrongDate: new Date().toISOString() });
+            } else {
+                var idx = list.findIndex(function(x) { return x.question === question.question; });
+                list[idx].wrongCount++;
+                list[idx].lastWrongDate = new Date().toISOString();
+            }
+            saveWrongQuestions(list);
+        }
+
+        // 页面导航
+        function navigateToSection(id) {
+            document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+            document.querySelectorAll('.nav-link').forEach(function(l) { l.classList.remove('active'); });
+            var target = document.getElementById(id);
+            if (target) { target.classList.add('active'); }
+            var link = document.querySelector('.nav-link[data-section="' + id + '"]');
+            if (link) { link.classList.add('active'); }
+            
+            // 如果切换到可视化模块，重新绘制图表
+            if (id === 'visualization') {
+                setTimeout(function() {
+                    loadElementGraph();
+                }, 100);
+            }
+        }
+
+        // 可视化模块
+        function loadElementGraph() {
+            var select = document.getElementById('elementSelect');
+            currentElement = select.value;
+            
+            // 清空并重新创建SVG
+            var svgContainer = document.getElementById('valenceSvg');
+            if (svgContainer) {
+                svgContainer.innerHTML = '';
+            }
+            
+            // 清空转化关系图
+            var graphCanvas = document.getElementById('graphCanvas');
+            if (graphCanvas) {
+                graphCanvas.innerHTML = '';
+            }
+            
+            // 绘制图表
+            drawValenceChart(currentElement);
+            drawConversionGraph(currentElement);
+        }
+
+        function drawValenceChart(element) {
+            var data = getCompoundData(element);
+            if (!data) {
+                console.log('No data for element:', element);
+                return;
+            }
+            var svg = document.getElementById('valenceSvg');
+            if (!svg) {
+                console.log('SVG element not found');
+                return;
+            }
+            
+            var width = svg.parentElement.clientWidth || 500;
+            var height = 300;
+            
+            // 设置SVG属性
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+            svg.innerHTML = ''; // 清空现有内容
+
+            var padding = 60;
+            var chartWidth = width - padding * 2;
+            var chartHeight = height - padding * 2;
+            var vMin = -3, vMax = 7, vRange = vMax - vMin;
+            var cats = ['hydride', 'element', 'oxide', 'acid', 'salt'];
+            var catNames = ['氢化物', '单质', '氧化物', '含氧酸', '盐'];
+            var colors = { hydride: '#ff6b6b', element: '#4ecdc4', oxide: '#ffe66d', acid: '#a855f7', base: '#ec4899', salt: '#22c55e' };
+
+            // 创建SVG内容
+            var svgContent = '';
+            
+            // 添加背景
+            svgContent += '<rect x="0" y="0" width="' + width + '" height="' + height + '" fill="rgba(20, 20, 40, 0.95)" rx="8"/>';
+            
+            // Y轴
+            svgContent += '<line x1="' + padding + '" y1="' + padding + '" x2="' + padding + '" y2="' + (height - padding) + '" stroke="#ffffff" stroke-width="2"/>';
+            
+            // Y轴刻度
+            for (var v = vMin; v <= vMax; v++) {
+                if (v % 2 === 0) {
+                    var y = padding + chartHeight * (1 - (v - vMin) / vRange);
+                    svgContent += '<line x1="' + (padding - 8) + '" y1="' + y + '" x2="' + padding + '" y2="' + y + '" stroke="#ffffff"/>';
+                    svgContent += '<text x="' + (padding - 12) + '" y="' + (y + 5) + '" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="end" font-family="Arial, sans-serif">' + (v >= 0 ? '+' : '') + v + '</text>';
+                }
+            }
+            
+            // X轴
+            svgContent += '<line x1="' + padding + '" y1="' + (height - padding) + '" x2="' + (width - padding) + '" y2="' + (height - padding) + '" stroke="#ffffff" stroke-width="2"/>';
+            
+            // X轴标签
+            cats.forEach(function(cat, idx) {
+                var x = padding + chartWidth * (idx + 0.5) / cats.length;
+                svgContent += '<text x="' + x + '" y="' + (height - padding + 28) + '" fill="#ffffff" font-size="14" text-anchor="middle" font-weight="bold" font-family="Arial, sans-serif">' + catNames[idx] + '</text>';
+            });
+            
+            // 绘制化合物节点
+            data.compounds.forEach(function(comp) {
+                var catIdx = cats.indexOf(comp.category);
+                if (catIdx === -1) return;
+                var x = padding + chartWidth * (catIdx + 0.5) / cats.length;
+                var valence = typeof comp.valence === 'number' ? comp.valence : 0;
+                var y = padding + chartHeight * (1 - (valence - vMin) / vRange);
+                var color = colors[comp.category] || '#00d2ff';
+                
+                // 节点背景
+                svgContent += '<circle cx="' + x + '" cy="' + y + '" r="22" fill="' + color + '" stroke="#ffffff" stroke-width="3" style="cursor:pointer" onclick="showNodeDetail(compoundData_' + comp.id + ')"/>';
+                // 节点内数字
+                svgContent += '<text x="' + x + '" y="' + (y + 5) + '" fill="#ffffff" font-size="14" text-anchor="middle" font-weight="bold" font-family="Arial, sans-serif" style="pointer-events:none">' + comp.formula + '</text>';
+                // 化合物名称
+                svgContent += '<text x="' + x + '" y="' + (y + 38) + '" fill="#ffffff" font-size="13" text-anchor="middle" font-weight="bold" font-family="Arial, sans-serif" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">' + comp.name + '</text>';
+            });
+            
+            svg.innerHTML = svgContent;
+            
+            // 存储化合物数据供点击使用
+            data.compounds.forEach(function(comp) {
+                window['compoundData_' + comp.id] = comp;
+            });
+        }
+
+        function drawConversionGraph(element) {
+            var data = getCompoundData(element);
+            if (!data) {
+                console.log('No data for conversion graph:', element);
+                return;
+            }
+            var canvas = document.getElementById('graphCanvas');
+            if (!canvas) {
+                console.log('Graph canvas not found');
+                return;
+            }
+            
+            var width = canvas.clientWidth || 400;
+            var height = canvas.clientHeight || 350;
+
+            // 清空画布
+            canvas.innerHTML = '';
+            canvas.style.background = 'rgba(20, 20, 40, 0.95)';
+            canvas.style.borderRadius = '8px';
+            canvas.style.padding = '15px';
+            canvas.style.overflowY = 'auto';
+
+            // 创建标题
+            var title = document.createElement('div');
+            title.style.color = '#00d2ff';
+            title.style.fontSize = '14px';
+            title.style.fontWeight = 'bold';
+            title.style.marginBottom = '12px';
+            title.style.textAlign = 'center';
+            title.textContent = '🔄 主要转化关系';
+            canvas.appendChild(title);
+
+            // 绘制简单的转化关系列表
+            if (data.conversions && data.conversions.length > 0) {
+                // 只显示前6个最重要的转化关系
+                var maxConversions = Math.min(data.conversions.length, 6);
+                
+                for (var i = 0; i < maxConversions; i++) {
+                    var conv = data.conversions[i];
+                    
+                    // 找到反应物和生成物
+                    var fromComp = null, toComp = null;
+                    data.compounds.forEach(function(comp) {
+                        if (comp.id === conv.from) fromComp = comp;
+                        if (comp.id === conv.to) toComp = comp;
+                    });
+                    
+                    if (!fromComp || !toComp) continue;
+                    
+                    var convItem = document.createElement('div');
+                    convItem.style.display = 'flex';
+                    convItem.style.alignItems = 'center';
+                    convItem.style.justifyContent = 'center';
+                    convItem.style.marginBottom = '8px';
+                    convItem.style.padding = '8px';
+                    convItem.style.background = 'rgba(255,255,255,0.05)';
+                    convItem.style.borderRadius = '6px';
+                    convItem.style.flexWrap = 'wrap';
+                    convItem.style.gap = '5px';
+
+                    // 反应物
+                    var fromBox = document.createElement('span');
+                    fromBox.style.padding = '5px 10px';
+                    fromBox.style.background = '#4ecdc4';
+                    fromBox.style.borderRadius = '4px';
+                    fromBox.style.color = '#fff';
+                    fromBox.style.fontWeight = 'bold';
+                    fromBox.style.fontSize = '13px';
+                    fromBox.textContent = fromComp.formula;
+
+                    // 箭头
+                    var arrow = document.createElement('span');
+                    arrow.style.color = '#ffe66d';
+                    arrow.style.fontSize = '16px';
+                    arrow.textContent = '→';
+
+                    // 条件
+                    var cond = document.createElement('span');
+                    cond.style.padding = '3px 8px';
+                    cond.style.background = 'rgba(255, 230, 109, 0.2)';
+                    cond.style.borderRadius = '4px';
+                    cond.style.color = '#ffe66d';
+                    cond.style.fontSize = '11px';
+                    cond.textContent = conv.condition || '';
+
+                    // 生成物
+                    var toBox = document.createElement('span');
+                    toBox.style.padding = '5px 10px';
+                    toBox.style.background = '#22c55e';
+                    toBox.style.borderRadius = '4px';
+                    toBox.style.color = '#fff';
+                    toBox.style.fontWeight = 'bold';
+                    toBox.style.fontSize = '13px';
+                    toBox.textContent = toComp.formula;
+
+                    convItem.appendChild(fromBox);
+                    convItem.appendChild(arrow);
+                    convItem.appendChild(cond);
+                    convItem.appendChild(toBox);
+                    
+                    canvas.appendChild(convItem);
+                }
+                
+                // 如果还有更多转化关系，显示提示
+                if (data.conversions.length > maxConversions) {
+                    var more = document.createElement('div');
+                    more.style.textAlign = 'center';
+                    more.style.color = '#666';
+                    more.style.fontSize = '12px';
+                    more.style.marginTop = '8px';
+                    more.textContent = '... 还有 ' + (data.conversions.length - maxConversions) + ' 个转化关系';
+                    canvas.appendChild(more);
+                }
+            }
+            
+            // 添加化合物图例
+            var legend = document.createElement('div');
+            legend.style.marginTop = '15px';
+            legend.style.paddingTop = '10px';
+            legend.style.borderTop = '1px solid rgba(255,255,255,0.1)';
+            legend.style.textAlign = 'center';
+            legend.innerHTML = '<span style="color:#888;font-size:11px;">💡 点击上方化合价图中的圆点查看化合物详情</span>';
+            canvas.appendChild(legend);
+        }
+
+        function showNodeDetail(comp) {
+            var modal = document.getElementById('nodeDetail');
+            var title = document.getElementById('nodeTitle');
+            var content = document.getElementById('nodeContent');
+
+            title.innerHTML = '<span style="color:#00d2ff;">' + comp.formula + '</span> - ' + comp.name;
+
+            var props = comp.properties || {};
+            var reacts = comp.reactions || [];
+
+            var html = '<h4>基本信息</h4><p><strong>类别：</strong>' + getCategoryName(comp.category) + '</p>';
+            if (comp.valence) { html += '<p><strong>化合价：</strong>' + comp.valence + '</p>'; }
+
+            html += '<h4>物理化学性质</h4>';
+            for (var key in props) { html += '<p><strong>' + getPropertyName(key) + '：</strong>' + props[key] + '</p>'; }
+
+            html += '<h4>常见反应</h4>';
+            if (reacts.length > 0) {
+                html += '<ul>';
+                reacts.forEach(function(r) { html += '<li>' + r + '</li>'; });
+                html += '</ul>';
+            } else { html += '<p>暂无数据</p>'; }
+
+            content.innerHTML = html;
+            modal.classList.add('show');
+        }
+
+        function closeNodeDetail() { document.getElementById('nodeDetail').classList.remove('show'); }
+
+        // 方程式练习模块
+        function startEquationPractice() {
+            var elem = document.getElementById('equationElement').value;
+            var diff = document.getElementById('equationDifficulty').value;
+            currentEquations = getEquations(elem, diff);
+
+            if (currentEquations.length === 0) {
+                alert('没有找到符合条件的方程式');
+                return;
+            }
+
+            currentEquationIndex = 0;
+            userAnswers = [];
+            showEquationQuestion(currentEquations[currentEquationIndex]);
+        }
+
+        function showEquationQuestion(eq) {
+            var display = document.getElementById('equationDisplay');
+            var answerInput = document.getElementById('answerInput');
+            var hintsSection = document.getElementById('hintsSection');
+
+            // 显示问题描述
+            var questionHtml = '<div class="equation-question">';
+            questionHtml += '<div class="question-label">问：</div>';
+            questionHtml += '<div class="question-text">' + (eq.description || eq.equation) + '</div>';
+            questionHtml += '</div>';
+            
+            // 显示答题格式
+            questionHtml += '<div class="equation-template">';
+            questionHtml += '<div class="template-label">答：</div>';
+            questionHtml += '<div class="template-inputs">';
+            
+            // 根据反应物和生成物数量生成输入框
+            var rCount = eq.reactants.length;
+            var pCount = eq.products.length;
+            var hasCondition = eq.conditions && eq.conditions.length > 0;
+            
+            // 第一行：反应物区域
+            questionHtml += '<div class="eq-row eq-reactants-row">';
+            for (var i = 0; i < rCount; i++) {
+                if (i > 0) questionHtml += '<span class="eq-plus">+</span>';
+                questionHtml += '<input type="text" class="eq-input eq-coeff" id="eqCR' + i + '" data-coeff="" placeholder="数量">';
+                questionHtml += '<input type="text" class="eq-input" id="eqR' + i + '" data-answer="' + eq.reactants[i] + '" placeholder="反应物">';
+            }
+            questionHtml += '</div>';
+            
+            // 第二行：等号和条件（条件在等号上方）
+            questionHtml += '<div class="eq-row eq-arrow-row">';
+            if (hasCondition) {
+                questionHtml += '<input type="text" class="eq-input eq-condition" id="eqCond" data-answer="' + eq.conditions.join(',') + '" placeholder="条件">';
+            }
+            questionHtml += '<span class="eq-equals">=</span>';
+            questionHtml += '</div>';
+            
+            // 第三行：生成物区域
+            questionHtml += '<div class="eq-row eq-products-row">';
+            for (var j = 0; j < pCount; j++) {
+                if (j > 0) questionHtml += '<span class="eq-plus">+</span>';
+                questionHtml += '<input type="text" class="eq-input eq-coeff" id="eqCP' + j + '" data-coeff="" placeholder="数量">';
+                questionHtml += '<input type="text" class="eq-input" id="eqP' + j + '" data-answer="' + eq.products[j] + '" placeholder="生成物">';
+            }
+            questionHtml += '</div>';
+            
+            questionHtml += '</div></div>';
+            display.innerHTML = questionHtml;
+
+            // 显示参考答案格式
+            var answerHtml = '<div class="answer-format">';
+            answerHtml += '<span style="color:#909090;font-size:0.9rem;">格式示例：2S + O₂ = 点燃 2SO₂ （系数1可不填）</span>';
+            answerHtml += '</div>';
+            answerHtml += '<button class="btn-primary" onclick="checkEquationAnswerNew()" style="margin-top:1.5rem;">提交答案</button>';
+            answerInput.innerHTML = answerHtml;
+
+            // 提示
+            hintsSection.innerHTML = '<div style="margin-top:1rem;"><span style="color:#ffe66d;">提示：</span><button class="hint-btn" onclick="showEquationHint(\'' + eq.type + '\')">查看提示</button></div>';
+        }
+
+        function showEquationHint(type) { 
+            alert('这是一个' + type + '。\n\n提示：\n1. 注意反应物和生成物的化学式\n2. 检查原子是否守恒\n3. 别忘了反应条件'); 
+        }
+
+        // 化学下标键盘功能
+        var lastFocusedInput = null;
+
+        function insertSymbol(symbol) {
+            var targetInput = lastFocusedInput || findActiveEquationInput();
+            if (targetInput) {
+                var start = targetInput.selectionStart || 0;
+                var end = targetInput.selectionEnd || 0;
+                var value = targetInput.value || '';
+                targetInput.value = value.substring(0, start) + symbol + value.substring(end);
+                targetInput.setSelectionRange(start + symbol.length, start + symbol.length);
+                targetInput.focus();
+            } else {
+                alert('请先点击输入框');
+            }
+        }
+
+        function insertSubscript(num) {
+            var targetInput = lastFocusedInput || findActiveEquationInput();
+            if (targetInput) {
+                var start = targetInput.selectionStart || 0;
+                var end = targetInput.selectionEnd || 0;
+                var value = targetInput.value || '';
+                targetInput.value = value.substring(0, start) + num + value.substring(end);
+                targetInput.setSelectionRange(start + num.length, start + num.length);
+                targetInput.focus();
+            } else {
+                alert('请先点击输入框');
+            }
+        }
+
+        function findActiveEquationInput() {
+            // 查找当前显示的方程式输入框
+            var eqInputs = document.querySelectorAll('.eq-input');
+            if (eqInputs.length > 0) {
+                return eqInputs[0];
+            }
+            var fillInputs = document.querySelectorAll('.fill-input');
+            if (fillInputs.length > 0) {
+                return fillInputs[0];
+            }
+            return null;
+        }
+
+        function clearInput() {
+            var targetInput = lastFocusedInput || findActiveEquationInput();
+            if (targetInput) {
+                targetInput.value = '';
+                targetInput.focus();
+            } else {
+                alert('请先点击输入框');
+            }
+        }
+        
+        // 监听所有输入框的焦点事件
+        function initKeyboardListeners() {
+            document.addEventListener('focus', function(e) {
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                    if (e.target.classList.contains('eq-input') || 
+                        e.target.id.indexOf('eq') === 0 || 
+                        e.target.id.indexOf('fill') === 0 ||
+                        e.target.classList.contains('fill-input')) {
+                        lastFocusedInput = e.target;
+                    }
+                }
+            }, true);
+        }
+
+        function checkEquationAnswer() {
+            var inputs = document.querySelectorAll('[id^="eqInput"]');
+            var correct = true;
+
+            inputs.forEach(function(input) {
+                var userAns = input.value.trim();
+                var correctAns = input.getAttribute('data-answer');
+                if (userAns.toLowerCase() === correctAns.toLowerCase()) {
+                    input.style.borderColor = '#22c55e';
+                } else {
+                    input.style.borderColor = '#ff6b6b';
+                    input.value = correctAns;
+                    correct = false;
+                }
+            });
+
+            userAnswers.push({ equation: currentEquations[currentEquationIndex], results: [] });
+
+            var modal = document.getElementById('feedbackModal');
+            var icon = document.getElementById('feedbackIcon');
+            var title = document.getElementById('feedbackTitle');
+            var message = document.getElementById('feedbackMessage');
+
+            if (correct) {
+                icon.textContent = '✅'; title.textContent = '回答正确！';
+                message.textContent = '太棒了！\n\n完整方程式：' + currentEquations[currentEquationIndex].equation;
+                updateProgress(currentElement, true);
+            } else {
+                icon.textContent = '❌'; title.textContent = '回答错误';
+                message.textContent = '正确答案已显示在输入框中。\n\n完整方程式：' + currentEquations[currentEquationIndex].equation;
+                updateProgress(currentElement, false);
+                addWrongQuestion({ type: 'equation', question: currentEquations[currentEquationIndex].equation,
+                                  answer: currentEquations[currentEquationIndex].products.join(', '), userAnswer: '',
+                                  difficulty: currentEquations[currentEquationIndex].difficulty, element: currentElement });
+            }
+
+            modal.classList.add('show');
+        }
+
+        // 新版方程式答案检查
+        function checkEquationAnswerNew() {
+            var allCorrect = true;
+            var results = { reactants: [], products: [], condition: null, coefficients: [] };
+
+            // 检查反应物系数
+            var rCount = currentEquations[currentEquationIndex].reactants.length;
+            var pCount = currentEquations[currentEquationIndex].products.length;
+            
+            for (var i = 0; i < rCount; i++) {
+                var coeffInput = document.getElementById('eqCR' + i);
+                var rInput = document.getElementById('eqR' + i);
+                
+                // 检查化学式
+                var userAns = rInput.value.trim();
+                var correctAns = rInput.getAttribute('data-answer');
+                var isCorrect = userAns.toLowerCase() === correctAns.toLowerCase();
+                
+                if (isCorrect) {
+                    rInput.style.borderColor = '#22c55e';
+                } else {
+                    rInput.style.borderColor = '#ff6b6b';
+                    rInput.value = correctAns;
+                    allCorrect = false;
+                }
+                results.reactants.push({ user: userAns, correct: correctAns, isCorrect: isCorrect });
+            }
+
+            // 检查条件
+            var condInput = document.getElementById('eqCond');
+            if (condInput) {
+                var userCond = condInput.value.trim();
+                var correctCond = condInput.getAttribute('data-answer');
+                var condCorrect = userCond === correctCond || userCond.includes(correctCond);
+                if (condCorrect) {
+                    condInput.style.borderColor = '#22c55e';
+                } else {
+                    condInput.style.borderColor = '#ff6b6b';
+                    condInput.value = correctCond;
+                    allCorrect = false;
+                }
+                results.condition = { user: userCond, correct: correctCond, isCorrect: condCorrect };
+            }
+
+            // 检查生成物化学式
+            for (var j = 0; j < pCount; j++) {
+                var pInput = document.getElementById('eqP' + j);
+                var userAns = pInput.value.trim();
+                var correctAns = pInput.getAttribute('data-answer');
+                var isCorrect = userAns.toLowerCase() === correctAns.toLowerCase();
+                
+                if (isCorrect) {
+                    pInput.style.borderColor = '#22c55e';
+                } else {
+                    pInput.style.borderColor = '#ff6b6b';
+                    pInput.value = correctAns;
+                    allCorrect = false;
+                }
+                results.products.push({ user: userAns, correct: correctAns, isCorrect: isCorrect });
+            }
+
+            // 显示反馈
+            var modal = document.getElementById('feedbackModal');
+            var icon = document.getElementById('feedbackIcon');
+            var title = document.getElementById('feedbackTitle');
+            var message = document.getElementById('feedbackMessage');
+
+            if (allCorrect) {
+                icon.textContent = '✅'; 
+                title.textContent = '回答正确！';
+                message.textContent = '太棒了！完全正确！\n\n完整方程式：\n' + currentEquations[currentEquationIndex].equation;
+                updateProgress(currentElement, true);
+            } else {
+                icon.textContent = '❌'; 
+                title.textContent = '回答错误';
+                message.textContent = '正确答案已显示在输入框中。\n\n完整方程式：\n' + currentEquations[currentEquationIndex].equation;
+                updateProgress(currentElement, false);
+                addWrongQuestion({ 
+                    type: 'equation', 
+                    question: currentEquations[currentEquationIndex].description || currentEquations[currentEquationIndex].equation,
+                    answer: currentEquations[currentEquationIndex].equation, 
+                    userAnswer: '',
+                    difficulty: currentEquations[currentEquationIndex].difficulty, 
+                    element: currentElement 
+                });
+            }
+
+            modal.classList.add('show');
+        }
+
+        // 化合物性质学习模块
+        function initProperties() {
+            allCompounds = [];
+            Object.keys(compounds).forEach(function(key) {
+                compounds[key].compounds.forEach(function(comp) {
+                    comp.elementKey = key;
+                    comp.elementName = compounds[key].name;
+                    allCompounds.push(comp);
+                });
+            });
+            filteredCompounds = allCompounds;
+            renderCompoundGrid();
+        }
+
+        function searchCompounds() {
+            var query = document.getElementById('compoundSearch').value.toLowerCase();
+            filteredCompounds = allCompounds.filter(function(comp) {
+                return comp.name.toLowerCase().includes(query) || comp.formula.toLowerCase().includes(query);
+            });
+            renderCompoundGrid();
+        }
+
+        function filterByCategory() {
+            var cat = document.getElementById('categoryFilter').value;
+            filteredCompounds = allCompounds.filter(function(comp) {
+                return cat === 'all' || comp.category === cat;
+            });
+            renderCompoundGrid();
+        }
+
+        function renderCompoundGrid() {
+            var grid = document.getElementById('compoundGrid');
+            if (filteredCompounds.length === 0) {
+                grid.innerHTML = '<p class="empty-state">没有找到匹配的化合物</p>';
+                return;
+            }
+
+            var html = '';
+            filteredCompounds.forEach(function(comp) {
+                html += '<div class="compound-card" onclick="showPropertyDetail(\'' + comp.id + '\')"><h3>' + comp.formula + '</h3><div class="formula">' + comp.name + '</div><span class="category">' + getCategoryName(comp.category) + '</span></div>';
+            });
+            grid.innerHTML = html;
+        }
+
+        function showPropertyDetail(compId) {
+            var comp = filteredCompounds.find(function(c) { return c.id === compId; });
+            if (!comp) comp = allCompounds.find(function(c) { return c.id === compId; });
+            if (!comp) return;
+
+            var modal = document.getElementById('propertyDetail');
+            var title = document.getElementById('propertyTitle');
+            var content = document.getElementById('propertyContent');
+
+            title.innerHTML = '<span style="color:#00d2ff;">' + comp.formula + '</span> - ' + comp.name;
+
+            var html = '<div style="margin-bottom:1.5rem;">';
+            html += '<p><strong>所属元素：</strong>' + comp.elementName + '</p>';
+            html += '<p><strong>物质类别：</strong>' + getCategoryName(comp.category) + '</p>';
+            if (comp.valence) { html += '<p><strong>化合价：</strong>' + comp.valence + '</p>'; }
+            html += '</div>';
+
+            html += '<h4 style="color:#00d2ff;">物理化学性质</h4>';
+            html += '<div style="background:rgba(0,0,0,0.2);padding:1rem;border-radius:10px;">';
+            var props = comp.properties || {};
+            var keys = Object.keys(props);
+            if (keys.length > 0) {
+                keys.forEach(function(key) {
+                    html += '<div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.1);">';
+                    html += '<span style="color:#ffe66d;">' + getPropertyName(key) + '：</span>';
+                    html += '<span>' + props[key] + '</span>';
+                    html += '</div>';
+                });
+            } else { html += '<p style="color:#a0a0a0;">暂无详细性质数据</p>'; }
+            html += '</div>';
+
+            html += '<h4 style="color:#00d2ff;margin-top:1.5rem;">常见反应</h4>';
+            html += '<div style="background:rgba(0,0,0,0.2);padding:1rem;border-radius:10px;">';
+            var reacts = comp.reactions || [];
+            if (reacts.length > 0) {
+                html += '<ul style="list-style:none;padding:0;">';
+                reacts.forEach(function(r) { html += '<li style="padding:0.5rem 0;font-family:monospace;">' + r + '</li>'; });
+                html += '</ul>';
+            } else { html += '<p style="color:#a0a0a0;">暂无反应数据</p>'; }
+            html += '</div>';
+
+            content.innerHTML = html;
+            modal.classList.add('show');
+        }
+
+        function closePropertyDetail() { document.getElementById('propertyDetail').classList.remove('show'); }
+
+        // 互动练习模块
+        function startPractice() {
+            var type = document.getElementById('questionType').value;
+            var diff = document.getElementById('practiceDifficulty').value;
+            var elem = document.getElementById('practiceElement').value;
+            currentQuestions = getPracticeQuestions(type, diff, elem);
+
+            if (currentQuestions.length === 0) {
+                alert('没有找到符合条件的题目');
+                return;
+            }
+
+            currentQuestionIndex = 0;
+            practiceResults = [];
+            showPracticeQuestion(currentQuestions[currentQuestionIndex]);
+        }
+
+        function showPracticeQuestion(q) {
+            var area = document.getElementById('practiceArea');
+
+            if (q.options) {
+                var html = '<div class="question-card"><h3>第 ' + (currentQuestionIndex + 1) + ' 题 - 选择题</h3><div class="question-text">' + q.question + '</div><div class="choice-options">';
+                var opts = ['A', 'B', 'C', 'D'];
+                q.options.forEach(function(opt, idx) {
+                    html += '<label class="choice-option" onclick="selectChoice(this)"><input type="radio" name="choice" value="' + opts[idx] + '"><span>' + opts[idx] + '. ' + opt + '</span></label>';
+                });
+                html += '</div><button class="submit-btn" onclick="submitChoiceAnswer()">提交答案</button></div>';
+                area.innerHTML = html;
+            } else if (q.answers) {
+                var html = '<div class="question-card"><h3>第 ' + (currentQuestionIndex + 1) + ' 题 - 填空题</h3><div class="question-text">' + q.question + '</div><div style="margin-top:1rem;">';
+                q.answers.forEach(function(ans, idx) {
+                    html += '<input type="text" class="fill-input" id="fillInput' + idx + '" placeholder="请输入第' + (idx + 1) + '个答案" data-answer="' + ans + '">';
+                });
+                html += '</div><button class="submit-btn" onclick="submitFillAnswer()">提交答案</button></div>';
+                area.innerHTML = html;
+            } else if (q.coefficients) {
+                var html = '<div class="question-card"><h3>第 ' + (currentQuestionIndex + 1) + ' 题 - 方程式配平</h3><div class="balance-equation">';
+                var parts = q.equation.split(' ');
+                var coefIdx = 0;
+                parts.forEach(function(p) {
+                    if (p === '_') {
+                        html += '<input type="number" class="balance-input" id="coefInput' + coefIdx + '" min="1" max="20" data-answer="' + q.coefficients[coefIdx] + '">';
+                        coefIdx++;
+                    } else { html += p + ' '; }
+                });
+                html += '</div><button class="submit-btn" onclick="submitBalanceAnswer()">提交答案</button></div>';
+                area.innerHTML = html;
+            }
+        }
+
+        function selectChoice(label) {
+            document.querySelectorAll('.choice-option').forEach(function(opt) { opt.classList.remove('selected'); });
+            label.classList.add('selected');
+        }
+
+        function submitChoiceAnswer() {
+            var selected = document.querySelector('input[name="choice"]:checked');
+            var q = currentQuestions[currentQuestionIndex];
+
+            if (!selected) { alert('请选择一个答案'); return; }
+
+            var userAns = selected.value;
+            var isCorrect = userAns === q.answer;
+            practiceResults.push({ question: q, userAnswer: userAns, isCorrect: isCorrect });
+
+            if (!isCorrect) {
+                addWrongQuestion({ type: 'choice', question: q.question, answer: q.answer, userAnswer: userAns,
+                                  difficulty: q.difficulty, element: q.element });
+            }
+
+            updateProgress(q.element, isCorrect);
+            showPracticeFeedback(isCorrect, q, userAns);
+        }
+
+        function submitFillAnswer() {
+            var inputs = document.querySelectorAll('[id^="fillInput"]');
+            var q = currentQuestions[currentQuestionIndex];
+            var userAnswers = [];
+            var isCorrect = true;
+
+            inputs.forEach(function(input) {
+                userAnswers.push(input.value.trim());
+                if (input.value.trim().toLowerCase() !== input.getAttribute('data-answer').toLowerCase()) {
+                    input.style.borderColor = '#ff6b6b';
+                    input.value = input.getAttribute('data-answer');
+                    isCorrect = false;
+                } else { input.style.borderColor = '#22c55e'; }
+            });
+
+            practiceResults.push({ question: q, userAnswer: userAnswers.join(', '), isCorrect: isCorrect });
+
+            if (!isCorrect) {
+                addWrongQuestion({ type: 'fill', question: q.question, answer: q.answers.join(', '),
+                                  userAnswer: userAnswers.join(', '), difficulty: q.difficulty, element: q.element });
+            }
+
+            updateProgress(q.element, isCorrect);
+            showPracticeFeedback(isCorrect, q, userAnswers.join(', '));
+        }
+
+        function submitBalanceAnswer() {
+            var inputs = document.querySelectorAll('[id^="coefInput"]');
+            var q = currentQuestions[currentQuestionIndex];
+            var userAnswers = [];
+            var isCorrect = true;
+
+            inputs.forEach(function(input) {
+                userAnswers.push(input.value);
+                if (input.value !== input.getAttribute('data-answer')) {
+                    input.style.borderColor = '#ff6b6b';
+                    input.value = input.getAttribute('data-answer');
+                    isCorrect = false;
+                } else { input.style.borderColor = '#22c55e'; }
+            });
+
+            practiceResults.push({ question: q, userAnswer: userAnswers.join(', '), isCorrect: isCorrect });
+
+            if (!isCorrect) {
+                addWrongQuestion({ type: 'balance', question: q.equation, answer: q.coefficients.join(', '),
+                                  userAnswer: userAnswers.join(', '), difficulty: q.difficulty, element: q.element });
+            }
+
+            updateProgress(q.element, isCorrect);
+            showPracticeFeedback(isCorrect, q, userAnswers.join(', '));
+        }
+
+        function showPracticeFeedback(isCorrect, q, userAnswer) {
+            var modal = document.getElementById('feedbackModal');
+            var icon = document.getElementById('feedbackIcon');
+            var title = document.getElementById('feedbackTitle');
+            var message = document.getElementById('feedbackMessage');
+
+            if (isCorrect) {
+                icon.textContent = '✅'; title.textContent = '回答正确！';
+                message.textContent = '太棒了！继续保持！';
+            } else {
+                icon.textContent = '❌'; title.textContent = '回答错误';
+                message.textContent = '正确答案：' + q.answer + '\n\n' + (q.explanation || '');
+            }
+
+            modal.classList.add('show');
+        }
+
+        // 学习进度模块
+        function initProgress() { updateProgressDisplay(); loadWrongQuestions(); }
+
+        function updateProgressDisplay() {
+            var stats = getLearningStats();
+            var totalEx = 0, totalCorrect = 0;
+
+            Object.keys(stats.elements).forEach(function(key) {
+                totalEx += stats.elements[key].total || 0;
+                totalCorrect += stats.elements[key].correct || 0;
+            });
+
+            var accuracy = totalEx > 0 ? Math.round((totalCorrect / totalEx) * 100) : 0;
+            document.getElementById('totalCorrect').textContent = accuracy + '%';
+            document.getElementById('totalExercises').textContent = totalEx;
+            document.getElementById('completedExercises').textContent = totalEx;
+
+            var elements = ['sulfur', 'sodium', 'iron', 'chlorine', 'nitrogen'];
+            elements.forEach(function(elem) {
+                var elemStats = stats.elements[elem] || { correct: 0, total: 0 };
+                var percent = elemStats.total > 0 ? Math.round((elemStats.correct / elemStats.total) * 100) : 0;
+                var progressBar = document.getElementById(elem + 'Progress');
+                var percentSpan = document.getElementById(elem + 'Percent');
+                if (progressBar) progressBar.style.width = percent + '%';
+                if (percentSpan) percentSpan.textContent = percent + '%';
+            });
+        }
+
+        function loadWrongQuestions() {
+            var wrongList = getWrongQuestions();
+            var container = document.getElementById('wrongList');
+
+            if (wrongList.length === 0) {
+                container.innerHTML = '<p class="empty-state">暂无错题记录</p>';
+                return;
+            }
+
+            wrongList.sort(function(a, b) { return b.wrongCount - a.wrongCount; });
+
+            var html = '';
+            wrongList.forEach(function(item) {
+                html += '<div class="wrong-item"><div class="question">' + item.question + '</div><div class="meta">正确答案: ' + item.answer + ' | 你的答案: ' + (item.userAnswer || '未作答') + ' | 错误次数: ' + item.wrongCount + '</div></div>';
+            });
+            container.innerHTML = html;
+        }
+
+        // 通用函数
+        function closeFeedback() {
+            document.getElementById('feedbackModal').classList.remove('show');
+            currentQuestionIndex++;
+            currentEquationIndex++;
+
+            if (currentQuestionIndex < currentQuestions.length) {
+                showPracticeQuestion(currentQuestions[currentQuestionIndex]);
+            } else if (currentEquationIndex < currentEquations.length) {
+                showEquationQuestion(currentEquations[currentEquationIndex]);
+            } else {
+                var correctCount = practiceResults ? practiceResults.filter(function(r) { return r.isCorrect; }).length : 0;
+                var total = practiceResults ? practiceResults.length : 0;
+                var acc = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+                alert('练习完成！\n\n正确数：' + correctCount + ' / ' + total + '\n正确率：' + acc + '%');
+                document.getElementById('practiceArea').innerHTML = '<p class="empty-state">点击"开始练习"按钮开始新的练习</p>';
+            }
+        }
+
+        // 更新头部统计
+        function updateHeaderStats() {
+            var stats = getLearningStats();
+            var totalEx = 0;
+
+            Object.keys(stats.elements).forEach(function(key) {
+                totalEx += stats.elements[key].total || 0;
+            });
+
+            document.getElementById('completedExercises').textContent = totalEx;
+
+            var studyDays = parseInt(localStorage.getItem('chemStudyDays') || '0');
+            if (totalEx > 0 && studyDays === 0) {
+                localStorage.setItem('chemStudyDays', '1');
+                localStorage.setItem('chemFirstStudyDate', new Date().toDateString());
+                studyDays = 1;
+            } else if (totalEx > 0) {
+                var firstDate = new Date(localStorage.getItem('chemFirstStudyDate') || new Date().toISOString());
+                var todayDate = new Date();
+                var diffDays = Math.floor((todayDate - firstDate) / (1000 * 60 * 60 * 24));
+                studyDays = Math.max(1, diffDays + 1);
+            }
+
+            document.getElementById('studyDays').textContent = studyDays;
+        }
+
+        // 页面加载初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.nav-link').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var sectionId = this.getAttribute('data-section');
+                    navigateToSection(sectionId);
+                });
+            });
+
+            initProperties();
+            initProgress();
+            updateHeaderStats();
+            initKeyboardListeners();
+            
+            // 延迟加载可视化图表，确保元素完全渲染
+            setTimeout(function() {
+                loadElementGraph();
+            }, 200);
+        });
+    </script>
+</body>
+</html>
