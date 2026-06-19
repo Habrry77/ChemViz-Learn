@@ -952,7 +952,10 @@ body {
 
 /* 响应式设计 */
 @media (max-width: 1024px) {
-    .sidebar { transform: translateX(-100%); }
+    .sidebar { 
+        transform: translateX(-100%); 
+        width: 180px;
+    }
     .sidebar.open { transform: translateX(0); }
     .content-area { margin-left: 0; }
     .mobile-menu-btn { display: block; }
@@ -961,8 +964,26 @@ body {
 
 @media (max-width: 768px) {
     .header-content { height: 50px; }
-    .main-container { margin-top: 50px; }
-    .content-area { padding: 15px; padding-bottom: 80px; }
+    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+    .main-container { 
+        margin-top: 50px; 
+        min-height: calc(100vh - 50px - 60px); /* 减去头部和底部导航 */
+        display: block;
+        padding-bottom: 60px;
+    }
+    .content-area { 
+        padding: 15px; 
+        padding-bottom: 80px;
+        margin: 0;
+        width: 100%;
+    }
+    
+    /* 侧边栏完全隐藏 */
+    .sidebar { 
+        transform: translateX(-100%);
+        width: 200px;
+        z-index: 999;
+    }
     
     /* 图谱容器改为垂直布局 */
     .diagram-container {
@@ -1090,26 +1111,84 @@ body {
 
 @media (min-width: 769px) {
     .mobile-nav { display: none; }
+    .mobile-element-bar { display: none; }
 }
 
 @media (max-width: 768px) {
     .substance-node:active, .element-card:active, .option-item:active { transform: scale(.95); }
+    
+    /* 移动端元素选择栏 */
+    .mobile-element-bar {
+        display: flex;
+        justify-content: space-around;
+        padding: 8px 5px;
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        gap: 4px;
+    }
+    
+    .mobile-element-btn {
+        flex: 1;
+        padding: 8px 4px;
+        border: none;
+        border-radius: 8px;
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        font-size: .85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all .2s;
+    }
+    
+    .mobile-element-btn.active {
+        background: var(--primary);
+        color: #fff;
+    }
+    
+    .mobile-element-btn:active {
+        transform: scale(.95);
+    }
 }
 
 /* 超小屏幕适配 */
 @media (max-width: 480px) {
     .header-content { height: 45px; }
+    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
     .logo span { font-size: .85rem; }
-    .main-container { margin-top: 45px; }
-    .content-area { padding: 10px; padding-bottom: 75px; }
+    .main-container { 
+        margin-top: 45px; 
+        min-height: calc(100vh - 45px - 110px);
+        display: block;
+        padding-bottom: 60px;
+    }
+    .content-area { 
+        padding: 10px; 
+        padding-bottom: 75px;
+        margin: 0;
+        width: 100%;
+    }
+    
+    /* 侧边栏完全隐藏 */
+    .sidebar { transform: translateX(-100%); }
+    
+    /* 移动端元素选择栏 */
+    .mobile-element-bar {
+        padding: 6px 4px;
+        gap: 3px;
+    }
+    
+    .mobile-element-btn {
+        font-size: .75rem;
+        padding: 6px 2px;
+    }
     
     .diagram-container { padding: 10px; gap: 15px; }
     .diagram-left { padding-bottom: 10px; margin-bottom: 10px; }
     
-    .animation-box { height: 220px; }
-    .beaker-container { transform: scale(0.75); }
+    .animation-box { height: 200px; }
+    .beaker-container { transform: scale(0.7); }
     
-    .diagram-canvas { height: 280px; }
+    .diagram-canvas { height: 260px; }
     
     .diagram-title { font-size: 1rem; }
     .diagram-btn { padding: 5px 10px; font-size: .75rem; }
