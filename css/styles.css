@@ -963,11 +963,89 @@ body {
     .header-content { height: 50px; }
     .main-container { margin-top: 50px; }
     .content-area { padding: 15px; padding-bottom: 80px; }
-    .diagram-canvas { height: 350px; }
-    .substance-node { padding: 6px 10px; font-size: .85rem; }
+    
+    /* 图谱容器改为垂直布局 */
+    .diagram-container {
+        flex-direction: column;
+        min-height: auto;
+        padding: 15px;
+    }
+    
+    .diagram-left {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding-right: 0;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+    
+    /* 动画区域调整 */
+    .animation-box {
+        height: 250px;
+    }
+    
+    .beaker-container {
+        transform: scale(0.85);
+    }
+    
+    /* 环形图谱调整 */
+    .diagram-canvas { 
+        height: 320px; 
+    }
+    
+    .substance-node { 
+        padding: 5px 8px; 
+        font-size: .75rem; 
+    }
+    
+    .reaction-label {
+        padding: 3px 8px;
+        font-size: .7rem;
+    }
+    
+    /* 阶段指示器 */
+    .animation-stages {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .stage {
+        font-size: .7rem;
+        padding: 6px;
+    }
+    
+    /* 结果显示 */
+    .result-display {
+        font-size: .8rem;
+        padding: 8px 12px;
+    }
+    
+    /* 下标工具栏 */
+    .subscript-toolbar {
+        padding: 10px;
+        gap: 4px;
+    }
+    
+    .subscript-btn {
+        width: 28px;
+        height: 28px;
+        font-size: .8rem;
+    }
+    
+    .toolbar-label {
+        font-size: .75rem;
+    }
+    
+    /* 练习卡片 */
     .question-card { padding: 15px; }
     .question-text { font-size: 1rem; }
     .practice-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+    
+    .fill-input {
+        padding: 10px 12px;
+        font-size: .9rem;
+    }
+    
     .shortcuts-hint { display: none !important; }
     
     .mobile-nav {
@@ -998,6 +1076,16 @@ body {
     
     .mobile-nav-btn.active { color: var(--primary); }
     .mobile-nav-btn .icon { font-size: 1.3rem; }
+    
+    /* 有机反应卡片 */
+    .organic-card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .organic-equation {
+        font-size: .9rem;
+    }
 }
 
 @media (min-width: 769px) {
@@ -1006,4 +1094,58 @@ body {
 
 @media (max-width: 768px) {
     .substance-node:active, .element-card:active, .option-item:active { transform: scale(.95); }
+}
+
+/* 超小屏幕适配 */
+@media (max-width: 480px) {
+    .header-content { height: 45px; }
+    .logo span { font-size: .85rem; }
+    .main-container { margin-top: 45px; }
+    .content-area { padding: 10px; padding-bottom: 75px; }
+    
+    .diagram-container { padding: 10px; gap: 15px; }
+    .diagram-left { padding-bottom: 10px; margin-bottom: 10px; }
+    
+    .animation-box { height: 220px; }
+    .beaker-container { transform: scale(0.75); }
+    
+    .diagram-canvas { height: 280px; }
+    
+    .diagram-title { font-size: 1rem; }
+    .diagram-btn { padding: 5px 10px; font-size: .75rem; }
+    
+    .animation-stages { gap: 4px; }
+    .stage { font-size: .65rem; padding: 5px; }
+    
+    .substance-node { padding: 4px 6px; font-size: .7rem; }
+    .reaction-label { padding: 2px 6px; font-size: .65rem; }
+    
+    .subscript-toolbar { padding: 8px; gap: 3px; }
+    .subscript-btn { width: 26px; height: 26px; font-size: .75rem; }
+    .toolbar-label { font-size: .7rem; }
+    .toolbar-sep { margin: 0 5px; }
+    
+    .question-card { padding: 12px; }
+    .question-text { font-size: .9rem; }
+    .option-item { padding: 10px; font-size: .85rem; }
+    .submit-btn { padding: 10px 20px; font-size: .85rem; }
+    
+    /* 元素卡片适配 */
+    .element-grid { gap: 6px; padding: 0; }
+    .element-card { border-radius: 8px; }
+    .element-card .symbol { font-size: 1.1rem; }
+    .element-card .name { font-size: .6rem; }
+    .element-card.organic { gap: 6px; padding: 8px; }
+    
+    .mobile-nav { padding: 8px 0; }
+    .mobile-nav-btn { font-size: .7rem; padding: 5px 10px; }
+    .mobile-nav-btn .icon { font-size: 1.1rem; }
+    
+    .knowledge-panel { padding: 12px; }
+    .knowledge-title { font-size: .95rem; }
+    
+    /* 知识详情 */
+    .knowledge-detail { padding: 10px; }
+    .knowledge-detail h3 { font-size: 1rem; }
+    .knowledge-detail p { font-size: .85rem; }
 }
