@@ -108,6 +108,26 @@ function setupEvents() {
         }
     });
 
+    // 窗口大小改变时重新渲染图谱
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            renderDiagram(currentElement);
+        }, 250);
+    });
+    
+    // 移动端元素选择栏
+    document.querySelectorAll('.mobile-element-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const el = btn.dataset.element;
+            document.querySelectorAll('.mobile-element-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentElement = el;
+            renderDiagram(el);
+        });
+    });
+
     // 滚轮缩放
     $('diagramCanvas').addEventListener('wheel', e => {
         e.preventDefault();
